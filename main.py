@@ -33,6 +33,7 @@ def hello_world():
 @app.route("/callback", methods=['POST'])
 def callback():
     # get X-Line-Signature header value
+    print(__name__)
     signature = request.headers['X-Line-Signature']
 
     # get request body as text
@@ -51,6 +52,7 @@ def callback():
 # MessageEvent
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    print(__name__)
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text='「' + event.message.text + '」って何？')
