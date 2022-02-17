@@ -1,4 +1,6 @@
 import tweepy
+import os
+import psycopg2
 
 CK = 'Bf75IpcBEdilBxemrqLjqsO4w'
 CS = '4njUIUpTJtLfzKUTHZD1r9c0CHTTWY41IwHFpKNJ1If2EAZhab'
@@ -12,7 +14,7 @@ def authorize_url():
   except tweepy.TweepError:
     return "Return authorization url is failed."
 
-def authentication_final(user_verifier):
+def authentication_final(user_verifier,userid):
   global auth,api
   session =   {
       "request_token": auth.request_token,
@@ -27,6 +29,11 @@ def authentication_final(user_verifier):
   session.pop("request_token")
   auth.request_token = token
 
+  DATABASE_URL = os.environ.get('DATABASE_URL')
+
+  conn = psycopg2.connect(DATABASE_URL)
+  cur = conn.cursor()
+
   try:
       ts = auth.get_access_token(user_verifier)
       token = ts[0]
@@ -34,6 +41,13 @@ def authentication_final(user_verifier):
       auth.set_access_token(token, secret)
       api = tweepy.API(auth)
       api.update_status('test tweet!!') # 認証が成功した時にツイートで確認したい方は使ってください
+
+      cur.execute(
+      "INSERT INTO database(userID, access_token, access_secret_token) VALUES({}, {}, {})".format(userid,token,secret) )
+      conn.commit()
+
+      cur.close()
+      conn.close()
       return '認証成功'
   except tweepy.TweepError:
       return 'Error! Failed to get access token.'

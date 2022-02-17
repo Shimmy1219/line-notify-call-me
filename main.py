@@ -54,7 +54,7 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
 
-    sending_message = determine_to_send(event.message.text)
+    sending_message = determine_to_send(event.message.text,event.source.user_id)
 
     if type(sending_message) == str:
         sending_message = TextSendMessage(text=sending_message)
@@ -66,14 +66,14 @@ def handle_message(event):
 
 authentication_in_process = False
 
-def determine_to_send(user_message):
+def determine_to_send(user_message,userid):
     global authentication_in_process
     if "ログイン" in user_message or "ろぐいん" in user_message:
         reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
         authentication_in_process = True;
     elif authentication_in_process: # add regex to make sure the format matches
         authentication_in_process = False
-        reply = authentication_final(user_message)
+        reply = authentication_final(user_message,userid)
     elif "登録" in user_message or "とうろく" in user_message:
         reply = "通知するワードを入力してください"
     elif "ひろむ" in user_message or "洸夢" in user_message:
