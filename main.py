@@ -51,12 +51,14 @@ def callback():
 # MessageEvent
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    if event.message.text == "ログイン" or event.message.text == "ろぐいん":
+    if "ログイン" in event.message.text or "ろぐいん" in event.message.text:
         reply = "こちらでログインをした後、表示される７桁の番号を入力してください"
-    elif event.message.text == "登録" or event.message.text == "とうろく":
+    elif "登録" in event.message.text or "とうろく" in event.message.text:
         reply = "通知するワードを入力してください"
     elif "ひろむ" in event.message.text or "洸夢" in event.message.text:
         reply = "どうされましたか"
+    elif "ささん" in event.message.text:
+        reply = "呼びましたか?"
     else:
         reply = '「' + event.message.text + '」って何？'
     line_bot_api.reply_message(
