@@ -40,7 +40,7 @@ def authentication_final(user_verifier,userid):
       secret = ts[1]
       auth.set_access_token(token, secret)
       api = tweepy.API(auth)
-      api.update_status('test tweet!!') # 認証が成功した時にツイートで確認したい方は使ってください
+      api.update_status('test tweet!!!!!') # 認証が成功した時にツイートで確認したい方は使ってください
 
       cur.execute(
       "INSERT INTO database(userID, access_token, access_secret_token) VALUES({}, {}, {})".format(userid,token,secret) )
