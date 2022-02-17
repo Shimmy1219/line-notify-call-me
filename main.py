@@ -55,6 +55,8 @@ def handle_message(event):
         reply = "こちらでログインをした後、表示される７桁の番号を入力してください"
     elif event.message.text == "登録" or event.message.text == "とうろく":
         reply = "通知するワードを入力してください"
+    elif "ひろむ" in event.message.text or "洸夢" in event.message.text:
+        reply = "どうされましたか"
     else:
         reply = '「' + event.message.text + '」って何？'
     line_bot_api.reply_message(
