@@ -13,6 +13,7 @@ def authorize_url():
     return "Return authorization url is failed."
 
 def authentication_final(user_verifier):
+  global auth,api
   session =   {
       "request_token": auth.request_token,
   }
