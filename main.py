@@ -13,6 +13,8 @@ from linebot.models import (
 )
 import os
 
+from twitter import authorize_url, authentication_final
+
 # 軽量なウェブアプリケーションフレームワーク:Flask
 app = Flask(__name__)
 
@@ -51,22 +53,38 @@ def callback():
 # MessageEvent
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    if "ログイン" in event.message.text or "ろぐいん" in event.message.text:
-        reply = "こちらでログインをした後、表示される７桁の番号を入力してください"
-    elif "登録" in event.message.text or "とうろく" in event.message.text:
-        reply = "通知するワードを入力してください"
-    elif "ひろむ" in event.message.text or "洸夢" in event.message.text:
-        reply = "どうされましたか"
-    elif "ささん" in event.message.text:
-        reply = "呼びましたか?"
-    elif "こんにちは" in event.message.text:
-        reply = "こんにちは"
-    else:
-        reply = '「' + event.message.text + '」って何？'
+
+    sending_message = determine_to_send(event.message.text)
+
+    if type(sending_message) == str:
+        sending_message = TextSendMessage(text=sending_message)
+
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=reply)
+        sending_message
     )
+
+authentication_in_process = False
+
+def determine_to_send(user_message):
+    global authentication_in_process
+    if "ログイン" in user_message or "ろぐいん" in user_message:
+        reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
+        authentication_in_process = True;
+    elif authentication_in_process: # add regex to make sure the format matches
+        authentication_in_process = False
+        reply = authentication_final(user_message)
+    elif "登録" in user_message or "とうろく" in user_message:
+        reply = "通知するワードを入力してください"
+    elif "ひろむ" in user_message or "洸夢" in user_message:
+        reply = "どうされましたか"
+    elif "ささん" in user_message:
+        reply = "呼びましたか?"
+    elif "こんにちは" in user_message:
+        reply = "こんにちは"
+    else:
+        reply = '「' + user_message + '」って何？'
+    return reply
 
 
 if __name__ == "__main__":
