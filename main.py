@@ -51,9 +51,15 @@ def callback():
 # MessageEvent
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    if event.message.text == "ログイン" or event.message.text == "ろぐいん":
+        reply = "こちらでログインをした後、表示される７桁の番号を入力してください"
+    elif event.message.text == "登録" or event.message.text == "とうろく":
+        reply = "通知するワードを入力してください"
+    else:
+        reply = '「' + event.message.text + '」って何？'
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text='「' + event.message.text + '」って何？')
+        TextSendMessage(text=reply)
     )
 
 
