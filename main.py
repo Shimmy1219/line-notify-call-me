@@ -59,6 +59,8 @@ def handle_message(event):
         reply = "どうされましたか"
     elif "ささん" in event.message.text:
         reply = "呼びましたか?"
+    elif "こんにちは" in event.message.text:
+        reply = "こんにちは"
     else:
         reply = '「' + event.message.text + '」って何？'
     line_bot_api.reply_message(
