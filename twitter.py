@@ -43,7 +43,7 @@ def authentication_final(user_verifier,userid):
       api.update_status('test tweet!!!!!') # 認証が成功した時にツイートで確認したい方は使ってください
 
       cur.execute(
-      "INSERT INTO database(userID, access_token, access_secret_token) VALUES({}, {}, {})".format(userid,token,secret) )
+      "INSERT INTO database(userid, access_token, access_secret_token) VALUES(1, 2, 3)")
       conn.commit()
 
       cur.close()
