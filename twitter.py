@@ -47,7 +47,7 @@ def authentication_final(user_verifier,userid):
     return "The user credentials are invalid."
   cur.execute(
   "INSERT INTO database (\
-    userid, access_token, access_token_secret, userID, screen_name, name\
+    userid, access_token, acess_token_secret, userID, screen_name, name\
     ) VALUES(%s, %s, %s, %s, %s, %s)",
       (userid, token, secret, user.id_str, user.screen_name, user.name))
   conn.commit()
