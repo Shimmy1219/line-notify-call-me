@@ -9,7 +9,8 @@ auth = tweepy.OAuthHandler(CK, CS)
 
 def is_exists(cur,column_name,data):
     cur.execute(
-        "SELECT EXISTS (SELECT * FROM database WHERE %s = %s)" % (column_name,data))
+        "SELECT EXISTS (SELECT * FROM database WHERE %s = %s)",(column_name,str(data)))
+    print(cur.fetchone())
     return cur.fetchone()
 
 def authorize_url():
