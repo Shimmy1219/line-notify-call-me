@@ -17,6 +17,10 @@ def is_exists(cur,column_name,data):
     cur.execute(
         "SELECT EXISTS (SELECT * FROM database WHERE %s = %s)",(column_name,str(data)))
     print(cur.fetchone())
+    conn.commit()
+
+    cur.close()
+    conn.close()
     return cur.fetchone()
 
 def authorize_url():
@@ -80,5 +84,6 @@ def register_keyword(userid):
   conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
   cur = conn.cursor()
 
-  res = cur.execute("SELECT * FROM database")
+  cur.execute("SELECT * FROM database")
+  res = cur.fetchall()
   print(res)
