@@ -34,26 +34,30 @@ def authentication_final(user_verifier,userid):
   conn = psycopg2.connect(DATABASE_URL)
   cur = conn.cursor()
 
-  #try:
-  ts = auth.get_access_token(user_verifier)
-  token = ts[0]
-  secret = ts[1]
-  auth.set_access_token(token, secret)
-  api = tweepy.API(auth)
-  #api.update_status('test tweet!!!!!') # 認証が成功した時にツイートで確認したい方は使ってください
   try:
-    user = api.verify_credentials()
-  except:
-    return "The user credentials are invalid."
-  cur.execute(
-  "INSERT INTO database (\
-    userid, access_token, acess_token_secret, twitterid, screen_name, name\
-    ) VALUES(%s, %s, %s, %s, %s, %s)",
-      (userid, token, secret, user.id_str, user.screen_name, user.name))
-  conn.commit()
+    ts = auth.get_access_token(user_verifier)
+    token = ts[0]
+    secret = ts[1]
+    auth.set_access_token(token, secret)
+    api = tweepy.API(auth)
+    #api.update_status('test tweet!!!!!') # 認証が成功した時にツイートで確認したい方は使ってください
+    try:
+      user = api.verify_credentials()
+    except:
+      return "The user credentials are invalid."
+    try:
+      cur.execute(
+      "INSERT INTO database (\
+        userid, access_token, acess_token_secret, twitterid, screen_name, name\
+        ) VALUES(%s, %s, %s, %s, %s, %s)",
+          (userid, token, secret, user.id_str, user.screen_name, user.name))
+      conn.commit()
 
-  cur.close()
-  conn.close()
-  return '認証成功'
-  #except tweepy.TweepError:
-    #return 'Error! Failed to get access token.'
+      cur.close()
+      conn.close()
+      return '認証成功\nこんにちは！{}さん\nメニューからキーワードを登録することができます。'.format(user.name)
+    except:
+      return 'Error! Failed to access the database.'
+
+  except tweepy.TweepError:
+    return 'Error! Failed to get access token.'
