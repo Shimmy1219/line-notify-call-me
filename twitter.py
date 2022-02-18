@@ -71,3 +71,12 @@ def authentication_final(user_verifier,userid):
 
   except tweepy.TweepError:
     return 'Error! Failed to get access token.'
+
+def register_keyword(userid):
+  DATABASE_URL = os.environ.get('DATABASE_URL')
+
+  conn = psycopg2.connect(DATABASE_URL)
+  cur = conn.cursor()
+
+  res = cur.execute("SELECT * FROM database WHERE userid = '%s'") % userid
+  print(res)

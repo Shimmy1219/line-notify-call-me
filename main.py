@@ -13,7 +13,7 @@ from linebot.models import (
 )
 import os
 
-from twitter import authorize_url, authentication_final
+from twitter import authorize_url, authentication_final,register_keyword
 
 # 軽量なウェブアプリケーションフレームワーク:Flask
 app = Flask(__name__)
@@ -65,9 +65,10 @@ def handle_message(event):
     )
 
 authentication_in_process = False
+register_keyword_process = False
 
 def determine_to_send(user_message,userid):
-    global authentication_in_process
+    global authentication_in_process, register_keyword_process
     if "ログイン" in user_message or "ろぐいん" in user_message:
         reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
         authentication_in_process = True;
@@ -75,7 +76,8 @@ def determine_to_send(user_message,userid):
         authentication_in_process = False
         reply = authentication_final(user_message,userid)
     elif "登録" in user_message or "とうろく" in user_message:
-        reply = "通知するワードを入力してください"
+        reply = register_keyword(userid)
+        register_keyword_process = True;
     elif "ひろむ" in user_message or "洸夢" in user_message:
         reply = "どうされましたか"
     elif "ささん" in user_message:
