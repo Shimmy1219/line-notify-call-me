@@ -48,7 +48,7 @@ def authentication_final(user_verifier,userid):
     try:
       cur.execute(
       "INSERT INTO database (\
-        userid,access_token, accesss_secret_token, userID, screen_name, name\
+        userid, access_token, access_token_secret, userID, screen_name, name\
         ) VALUES(%s, %s, %s, %s, %s, %s)",
          (userid, token, secret, user.id_str, user.screen_name, user.name))
       conn.commit()
