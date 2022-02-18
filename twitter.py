@@ -78,5 +78,5 @@ def register_keyword(userid):
   conn = psycopg2.connect(DATABASE_URL)
   cur = conn.cursor()
 
-  res = cur.execute("SELECT * FROM database WHERE userid = %s" % str('U039da9cf7fe9ea0875e633f69b7f8e2e'))
+  res = cur.execute("SELECT * FROM database")
   print(res)
