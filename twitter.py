@@ -7,6 +7,12 @@ CS = '4njUIUpTJtLfzKUTHZD1r9c0CHTTWY41IwHFpKNJ1If2EAZhab'
 
 auth = tweepy.OAuthHandler(CK, CS)
 
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+conn = psycopg2.connect(DATABASE_URL)
+cur = conn.cursor()
+
 def is_exists(cur,column_name,data):
     cur.execute(
         "SELECT EXISTS (SELECT * FROM database WHERE %s = %s)",(column_name,str(data)))
@@ -35,10 +41,6 @@ def authentication_final(user_verifier,userid):
   session.pop("request_token")
   auth.request_token = token
 
-  DATABASE_URL = os.environ.get('DATABASE_URL')
-
-  conn = psycopg2.connect(DATABASE_URL)
-  cur = conn.cursor()
 
   try:
     ts = auth.get_access_token(user_verifier)
@@ -75,7 +77,7 @@ def authentication_final(user_verifier,userid):
 def register_keyword(userid):
   DATABASE_URL = os.environ.get('DATABASE_URL')
 
-  conn = psycopg2.connect(DATABASE_URL)
+  conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
   cur = conn.cursor()
 
   res = cur.execute("SELECT * FROM database")
