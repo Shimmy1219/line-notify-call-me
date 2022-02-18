@@ -7,6 +7,11 @@ CS = '4njUIUpTJtLfzKUTHZD1r9c0CHTTWY41IwHFpKNJ1If2EAZhab'
 
 auth = tweepy.OAuthHandler(CK, CS)
 
+def is_exists(cur,column_name,data):
+    cur.execute(
+        "SELECT EXISTS (SELECT * FROM database WHERE %s = %s)" % (column_name,data))
+    return cur.fetchone()
+
 def authorize_url():
   try:
     redirect_url = auth.get_authorization_url()
@@ -45,19 +50,23 @@ def authentication_final(user_verifier,userid):
       user = api.verify_credentials()
     except:
       return "The user credentials are invalid."
-    try:
-      cur.execute(
-      "INSERT INTO database (\
-        userid, access_token, acess_token_secret, twitterid, screen_name, name\
-        ) VALUES(%s, %s, %s, %s, %s, %s)",
-          (userid, token, secret, user.id_str, user.screen_name, user.name))
-      conn.commit()
 
-      cur.close()
-      conn.close()
-      return '認証成功\nこんにちは！{}さん\nメニューからキーワードを登録することができます。'.format(user.name)
-    except:
-      return 'Error! Failed to access the database.'
+    if is_exists(cur,'twitterid',user.id_str) == False:
+      try:
+        cur.execute(
+        "INSERT INTO database (\
+          userid, access_token, acess_token_secret, twitterid, screen_name, name\
+          ) VALUES(%s, %s, %s, %s, %s, %s)",
+            (userid, token, secret, user.id_str, user.screen_name, user.name))
+        conn.commit()
+
+        cur.close()
+        conn.close()
+        return '認証成功\nこんにちは！{}さん\nメニューからキーワードを登録することができます。'.format(user.name)
+      except:
+        return 'Error! Failed to access the database.'
+    else:
+      return '{}はログインされています'.format(user.screen_name)
 
   except tweepy.TweepError:
     return 'Error! Failed to get access token.'
