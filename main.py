@@ -106,6 +106,7 @@ def determine_to_send(user_message,userid):
             reply = "登録ありがとうございました。"
             register_keyword_process =  False
         else:
+            
             reply = "登録しました。\n続けて登録したい場合は語彙を選択してください\n終了する場合はexitを入力してください。"
     elif "reset" in user_message:
         authentication_in_process = False #twittterの認証をするプロセス

@@ -12,6 +12,6 @@ id = '2423455610'
 #cur.execute(
     #"SELECT EXISTS (SELECT * FROM database WHERE {} = '{}')".format(column_name,id))
 cur.execute(
-    'SELECT * FROM database'
+    'INSERT INTO database '
 )
 pprint(cur.fetchall())

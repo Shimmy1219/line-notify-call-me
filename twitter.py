@@ -85,17 +85,19 @@ def pushed_register_keyword(userid):
   conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
   cur = conn.cursor()
 
-  cur.execute('SELECT * FROM database WHERE userid = %s',(userid,))
-  res = cur.fetchall()
-
-  cur.close()
-  conn.close()
-  if len(res) == 1:
-    return "キーワードを送信してください。",res
+  if is_exists('userid',userid) == True:
+    cur.execute('SELECT * FROM database WHERE userid = %s',(userid,))
+    res = cur.fetchall()
+    cur.close()
+    conn.close()
+    if len(res) == 1:
+      return "キーワードを送信してください。",res
+    else:
+      return "複数のアカウントでログインされています。キーワードを設定するアカウントを選択してください。", res
   else:
-    for account in res:
-      account[6]
-    return "複数のアカウントでログインされています。キーワードを設定するアカウントを選択してください。", res
+    return "まずtwitterにログインしてください"
+
+
 
 def register_keyword(keyword):
   DATABASE_URL = os.environ.get('DATABASE_URL')
