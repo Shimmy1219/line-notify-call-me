@@ -70,8 +70,6 @@ def authentication_final(user_verifier,userid): #Twitterの認証をしてユー
       except:
         return 'Error! Failed to access the database.'
     else: #もし既にユーザーがデータベースにあったら
-      conn.commit()
-
       cur.close()
       conn.close()
       return '{}はログインされています'.format(user.screen_name)
@@ -108,8 +106,11 @@ def register_keyword(userid,screen_name,keyword):
   cur.execute(
       "SELECT EXISTS (SELECT * FROM database WHERE userid = '{}' AND screen_name = '{}')".format(userid,screen_name))
   result = cur.fetchone()[0]
+  print(screen_name,userid)
+  print(result)
   if result == False:
-    cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword),userid,screen_name))
+    keyword_list = [keyword]
+    cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword_list),userid,screen_name))
     conn.commit()
   else:
     cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))

@@ -90,10 +90,10 @@ def record_session(exists,session,userid,column_session='session_id'):
     cur = conn.cursor()
     if exists == True:
         cur.execute("UPDATE session SET {} = %s WHERE userid = %s".format(column_session),(session,userid))
-        print("UPDATEしました")
+        print("セッションを"+session+"に更新しました")
     else:
         cur.execute("INSERT INTO session ({},userid) VALUES (%s,%s)".format(column_session),(session,userid))
-        print("INSERTしました")
+        print("新規にセッションを"+session+"で登録しました")
     conn.commit()
 
 def determine_to_send(user_message,userid):
