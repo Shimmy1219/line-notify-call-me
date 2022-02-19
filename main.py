@@ -104,7 +104,7 @@ def determine_to_send(user_message,userid):
     is_exists_user = is_exists('session','userid',userid)
     if is_exists_user:
         cur.execute('SELECT session_id FROM session WHERE userid = %s',(userid,))
-        session = cur.fetchone()
+        session = cur.fetchone()[0]
         print(session)
     if "reset" in user_message:
         cur.execute("UPDATE session SET session = 'normal' WHERE userid = '{}'".format(userid))
