@@ -11,7 +11,8 @@ column_name = 'twitterid'
 id = '2423455610'
 #cur.execute(
     #"SELECT EXISTS (SELECT * FROM database WHERE {} = '{}')".format(column_name,id))
+session_id = 'session_id'
 cur.execute(
-    'INSERT INTO database '
+    "INSERT INTO session ({},userid) VALUES (%s,%s)".format('session_id'),('select_account_process_to_register_word','U039da9cf7fe9ea0875e633f69b7f8e2e')
 )
-pprint(cur.fetchall())
+conn.commit()

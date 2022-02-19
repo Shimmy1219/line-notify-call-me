@@ -83,16 +83,16 @@ def make_button_template(text,title,buttons_list):
     )
     return message_template
 
-def record_session(exists,session,userid,column_session="session_id"):
+def record_session(exists,session,userid,column_session='session_id'):
     DATABASE_URL = os.environ.get('DATABASE_URL')
 
     conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
     cur = conn.cursor()
     if exists == True:
-        cur.execute("UPDATE session SET %s = %s WHERE userid = %s",(str(column_session),session,userid))
+        cur.execute("UPDATE session SET {} = %s WHERE userid = %s".format(column_session),(session,userid))
         print("UPDATEしました")
     else:
-        cur.execute("INSERT INTO session (%s,userid) VALUES (%s,%s)",(str(column_session),session,userid))
+        cur.execute("INSERT INTO session ({},userid) VALUES (%s,%s)".format(column_session),(session,userid))
         print("INSERTしました")
     conn.commit()
 
