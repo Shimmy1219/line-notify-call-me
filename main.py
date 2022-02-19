@@ -89,9 +89,9 @@ def record_session(exists,session,userid):
     conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
     cur = conn.cursor()
     if exists == True:
-        cur.execute("UPDATE session SET session_id = '{}' WHERE userid = '{}'".format(session,userid))
+        cur.execute("UPDATE session SET session_id = '%s' WHERE userid = '%s'",(session,userid))
     else:
-        cur.execute("INSERT INTO session (session_id,userid) VALUES ({},{})".format(session,userid))
+        cur.execute("INSERT INTO session (session_id,userid) VALUES (%s,%s)",(session,userid))
 
 def determine_to_send(user_message,userid):
     DATABASE_URL = os.environ.get('DATABASE_URL')
