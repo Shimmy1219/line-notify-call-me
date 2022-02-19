@@ -94,6 +94,8 @@ def pushed_register_keyword(userid):
       return "複数のアカウントでログインされています。キーワードを設定するアカウントを選択してください。", res
   else:
     res = []
+    cur.close()
+    conn.close()
     return "まずtwitterにログインしてください",res
 
 
@@ -103,12 +105,9 @@ def register_keyword(userid,screen_name,keyword):
 
   conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
   cur = conn.cursor()
-  print(screen_name)
   cur.execute(
       "SELECT EXISTS (SELECT * FROM database WHERE userid = '{}' AND screen_name = '{}')".format(userid,screen_name))
   result = cur.fetchone()[0]
-  print(screen_name,userid)
-  print(result)
   if result == False:
     keyword_list = [keyword]
     cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword_list),userid,screen_name))
@@ -116,10 +115,11 @@ def register_keyword(userid,screen_name,keyword):
   else:
     cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))
     keyword_list = cur.fetchone()[0]
-    print(type(list))
     keyword_list.append(keyword)
     cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword_list),userid,screen_name))
     conn.commit()
+  cur.close()
+  conn.close()
 
 
 
