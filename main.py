@@ -115,7 +115,7 @@ def determine_to_send(user_message,userid):
     elif "登録" in user_message or "とうろく" in user_message:
         reply, account_list = pushed_register_keyword(userid)
         if len(account_list) > 1:
-            record_session(is_exists_user,'select_account_process_to_register_word',,userid)
+            record_session(is_exists_user,'select_account_process_to_register_word',userid)
             button_list = []
             for i in range (len(account_list)):
                 button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
