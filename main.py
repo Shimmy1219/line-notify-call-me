@@ -104,6 +104,7 @@ def determine_to_send(user_message,userid):
     is_exists_user = is_exists('session','userid',userid)
     if is_exists_user:
         session = cur.execute('SELECT session FROM session WHERE userid = %s',(userid,))
+        print(session)
     if "reset" in user_message:
         cur.execute("UPDATE session SET session = 'normal' WHERE userid = '{}'".format(userid))
     elif "ログイン" in user_message or "ろぐいん" in user_message:
@@ -115,6 +116,7 @@ def determine_to_send(user_message,userid):
         else:
             reply = authentication_final(user_message,userid)
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
+            conn.commit()
     elif "登録" in user_message or "とうろく" in user_message:
         reply, account_list = pushed_register_keyword(userid)
         if len(account_list) > 1:
@@ -126,6 +128,7 @@ def determine_to_send(user_message,userid):
             reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
         if len(account_list) == 1:
             record_session(is_exists_user,'register_keyword_process',userid)
+            reply = "キーワードを送信してください"
     elif is_exists_user == True and session == 'select_account_process_to_register_word':
         record_session(is_exists_user,'register_keyword_process',userid)
         reply = "キーワードを送信してください"
@@ -133,6 +136,7 @@ def determine_to_send(user_message,userid):
         if "exit" in user_message:
             reply = "登録ありがとうございました。"
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
+            conn.commit()
         else:
 
             reply = "登録しました。\n続けて登録したい場合は語彙を選択してください\n終了する場合はexitを入力してください。"
