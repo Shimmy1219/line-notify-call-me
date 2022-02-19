@@ -8,7 +8,7 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    FollowEvent, MessageEvent, TextMessage, TextSendMessage, ImageMessage, ImageSendMessage, TemplateSendMessage, URIAction, PostbackAction,
+    FollowEvent, MessageEvent, TextMessage, TextSendMessage, ImageMessage, ImageSendMessage, TemplateSendMessage, URIAction, PostbackAction,MessageAction,
     ButtonsTemplate, PostbackTemplateAction, MessageTemplateAction, URITemplateAction
 )
 import os
@@ -69,20 +69,12 @@ register_keyword_process = False #キーワードを登録するprocess
 select_account_process = False #アカウントを選択するprocess
 selected_account = None
 
-def make_button_template(alt,text,title,buttons_list):
+def make_button_template(text,title,buttons_list):
     message_template = TemplateSendMessage(
-        alt_text="にゃーん",
         template=ButtonsTemplate(
             text=text,
             title=title,
-            image_size="cover",
-            thumbnail_image_url="https:",
-            actions=[
-                PostbackAction(
-                    uri="https://任意のページURL",
-                    label="URIアクションのLABEL"
-                )
-            ]
+            actions=buttons_list
         )
     )
     return message_template
@@ -99,6 +91,11 @@ def determine_to_send(user_message,userid):
         reply, account_list = pushed_register_keyword(userid)
         if len(account_list) != 1:
             select_account_process = True
+            button_list = []
+            for i in range (len(account_list)):
+                button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
+                button_list.append(button_obj)
+            reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
         register_keyword_process = True;
     elif select_account_process:
         select_account_process = False
