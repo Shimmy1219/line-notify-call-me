@@ -17,7 +17,9 @@ def is_exists(column_name,data): #コラムにデータがあるか確認する�
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
     cur.execute(
-        "SELECT EXISTS (SELECT * FROM database WHERE %s = %s)",(column_name,str(data)))
+      "SELECT * FROM database WHERE %s = %s",(column_name,str(data)))
+    #cur.execute(
+        #"SELECT EXISTS (SELECT * FROM database WHERE %s = %s)",(column_name,str(data)))
     print(cur.fetchone())
     return cur.fetchone() #return True or False
 
