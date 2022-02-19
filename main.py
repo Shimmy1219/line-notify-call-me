@@ -90,8 +90,10 @@ def record_session(exists,session,userid):
     cur = conn.cursor()
     if exists == True:
         cur.execute("UPDATE session SET session_id = '%s' WHERE userid = '%s'",(session,userid))
+        print("UPDATEしました")
     else:
         cur.execute("INSERT INTO session (session_id,userid) VALUES (%s,%s)",(session,userid))
+        print("INSERTしました")
 
 def determine_to_send(user_message,userid):
     DATABASE_URL = os.environ.get('DATABASE_URL')
