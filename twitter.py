@@ -95,7 +95,8 @@ def pushed_register_keyword(userid):
     else:
       return "複数のアカウントでログインされています。キーワードを設定するアカウントを選択してください。", res
   else:
-    return "まずtwitterにログインしてください"
+    res = []
+    return "まずtwitterにログインしてください",res
 
 
 

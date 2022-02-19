@@ -82,12 +82,20 @@ def make_button_template(text,title,buttons_list):
 
 def determine_to_send(user_message,userid):
     global authentication_in_process, register_keyword_process, select_account_process
-    if "ログイン" in user_message or "ろぐいん" in user_message:
+    if "reset" in user_message:
+        authentication_in_process = False #twittterの認証をするプロセス
+        register_keyword_process = False #キーワードを登録するprocess
+        select_account_process = False #アカウントを選択するprocess
+    elif "ログイン" in user_message or "ろぐいん" in user_message:
+        select_account_process = False
         reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
         authentication_in_process = True;
     elif authentication_in_process: # add regex to make sure the format matches
-        authentication_in_process = False
-        reply = authentication_final(user_message,userid)
+        if user_message.isdecimal() == False:
+            reply = "上記のURLにアクセスし、表示される7桁の番号を入力してください。キャンセルの場合はresetと入力してください。"
+        else:
+            authentication_in_process = False
+            reply = authentication_final(user_message,userid)
     elif "登録" in user_message or "とうろく" in user_message:
         reply, account_list = pushed_register_keyword(userid)
         if len(account_list) != 1:
@@ -106,12 +114,9 @@ def determine_to_send(user_message,userid):
             reply = "登録ありがとうございました。"
             register_keyword_process =  False
         else:
-            
+
             reply = "登録しました。\n続けて登録したい場合は語彙を選択してください\n終了する場合はexitを入力してください。"
-    elif "reset" in user_message:
-        authentication_in_process = False #twittterの認証をするプロセス
-        register_keyword_process = False #キーワードを登録するprocess
-        select_account_process = False #アカウントを選択するprocess
+
     else:
         reply = '「' + user_message + '」って何？'
     return reply
