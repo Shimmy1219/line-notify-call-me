@@ -17,10 +17,6 @@ def is_exists(cur,column_name,data):
     cur.execute(
         "SELECT EXISTS (SELECT * FROM database WHERE %s = %s)",(column_name,str(data)))
     print(cur.fetchone())
-    conn.commit()
-
-    cur.close()
-    conn.close()
     return cur.fetchone()
 
 def authorize_url():
@@ -73,6 +69,9 @@ def authentication_final(user_verifier,userid):
       except:
         return 'Error! Failed to access the database.'
     else:
+      conn.commit()
+      cur.close()
+      conn.close()
       return '{}はログインされています'.format(user.screen_name)
 
   except tweepy.TweepError:
