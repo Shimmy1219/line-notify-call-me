@@ -106,7 +106,7 @@ def register_keyword(userid,screen_name,keyword):
   conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
   cur = conn.cursor()
   cur.execute(
-      "SELECT EXISTS (SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}')".format(userid,screen_name))
+      "SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))
   result = cur.fetchone()[0]
   print(result)
   if result == False:
