@@ -98,7 +98,7 @@ def determine_to_send(user_message,userid):
             reply = authentication_final(user_message,userid)
     elif "登録" in user_message or "とうろく" in user_message:
         reply, account_list = pushed_register_keyword(userid)
-        if len(account_list) != 1:
+        if len(account_list) > 1:
             select_account_process = True
             button_list = []
             for i in range (len(account_list)):
