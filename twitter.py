@@ -18,8 +18,9 @@ def is_exists(column_name,data): #コラムにデータがあるか確認する�
     cur = conn.cursor()
     cur.execute(
       "SELECT EXISTS (SELECT * FROM database WHERE {} = '{}')".format(column_name,data))
-    print(cur.fetchone()[0])
-    return cur.fetchone()[0] #return True or False
+    result = cur.fetchone()[0]
+    print(result)
+    return result #return True or False
 
 def authorize_url():  #Twitterの認証URLを返す
   try:
@@ -54,7 +55,7 @@ def authentication_final(user_verifier,userid): #Twitterの認証をしてユー
       user = api.verify_credentials()
     except:
       return "The user credentials are invalid."
-
+    print(is_exists('twitterid',user.id_str))
     if is_exists('twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
       try: #データベースにユーザーを登録
         cur.execute(
