@@ -1,5 +1,6 @@
 import psycopg2
 from sqlalchemy import column
+from pprint import pprint
 
 
 print("=====================================")
@@ -8,7 +9,9 @@ conn = psycopg2.connect(DATABASE_URL)
 cur = conn.cursor()
 column_name = 'twitterid'
 id = '2423455610'
+#cur.execute(
+    #"SELECT EXISTS (SELECT * FROM database WHERE {} = '{}')".format(column_name,id))
 cur.execute(
-    "SELECT EXISTS (SELECT * FROM database WHERE {} = '{}')".format(column_name,id))
-
-print(cur.fetchone()[0])
+    'SELECT * FROM database'
+)
+pprint(cur.fetchall())

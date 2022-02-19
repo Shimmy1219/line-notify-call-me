@@ -72,10 +72,13 @@ selected_account = None
 def make_button_template(text,title,buttons_list):
     message_template = TemplateSendMessage(
         template=ButtonsTemplate(
-            text=text,
-            title=title,
-            actions=buttons_list
-        )
+            text="にゃーん",
+            title="タイトルだよ",
+            actions=[
+                MessageAction(label="1",text="2"),
+                MessageAction(label="3",text="4")
+            ]
+    )
     )
     return message_template
 

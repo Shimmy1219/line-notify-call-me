@@ -55,7 +55,6 @@ def authentication_final(user_verifier,userid): #Twitterの認証をしてユー
       user = api.verify_credentials()
     except:
       return "The user credentials are invalid."
-    print(is_exists('twitterid',user.id_str))
     if is_exists('twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
       try: #データベースにユーザーを登録
         cur.execute(
