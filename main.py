@@ -94,7 +94,7 @@ def record_session(exists,session,userid):
     else:
         cur.execute("INSERT INTO session (session_id,userid) VALUES (%s,%s)",(session,userid))
         print("INSERTしました")
-    cur.commit()
+    conn.commit()
 
 def determine_to_send(user_message,userid):
     DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -124,7 +124,8 @@ def determine_to_send(user_message,userid):
                 button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
                 button_list.append(button_obj)
             reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
-        record_session(is_exists_user,'register_keyword_process',userid)
+        if len(account_list) == 1:
+            record_session(is_exists_user,'register_keyword_process',userid)
     elif is_exists_user == True and session == 'select_account_process_to_register_word':
         record_session(is_exists_user,'register_keyword_process',userid)
         reply = "キーワードを送信してください"
