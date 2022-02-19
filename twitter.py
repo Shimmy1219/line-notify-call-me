@@ -100,11 +100,20 @@ def pushed_register_keyword(userid):
 
 
 
-def register_keyword(keyword):
+def register_keyword(userid,screen_name,keyword):
   DATABASE_URL = os.environ.get('DATABASE_URL')
 
   conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
   cur = conn.cursor()
+  cur.execute(
+      "SELECT EXISTS (SELECT * FROM database WHERE userid = '{}' AND screen_name = '{}')".format(userid,screen_name))
+  result = cur.fetchone()[0]
+  if result == False:
+    cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword),userid,screen_name))
+  else:
+    cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))
+    list = cur.fetchone()
+    print(list)
 
-  cur.execute('INSERT INTO database ')
+
 

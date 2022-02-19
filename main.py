@@ -83,16 +83,16 @@ def make_button_template(text,title,buttons_list):
     )
     return message_template
 
-def record_session(exists,session,userid):
+def record_session(exists,session,userid,column_session='session_id'):
     DATABASE_URL = os.environ.get('DATABASE_URL')
 
     conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
     cur = conn.cursor()
     if exists == True:
-        cur.execute("UPDATE session SET session_id = %s WHERE userid = %s",(session,userid))
+        cur.execute("UPDATE session SET %s = %s WHERE userid = %s",(column_session,session,userid))
         print("UPDATEしました")
     else:
-        cur.execute("INSERT INTO session (session_id,userid) VALUES (%s,%s)",(session,userid))
+        cur.execute("INSERT INTO session (%s,userid) VALUES (%s,%s)",(column_session,session,userid))
         print("INSERTしました")
     conn.commit()
 
@@ -129,17 +129,18 @@ def determine_to_send(user_message,userid):
             reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
         if len(account_list) == 1:
             record_session(is_exists_user,'register_keyword_process',userid)
+            record_session(is_exists_user,account_list[0][5],userid,'logined_twitterid')
             reply = "キーワードを送信してください"
     elif is_exists_user == True and session == 'select_account_process_to_register_word':
         record_session(is_exists_user,'register_keyword_process',userid)
+        record_session(is_exists_user,user_message,userid,'logined_twitterid')
         reply = "キーワードを送信してください"
-    elif register_keyword_process:
+    elif is_exists_user == True and session == 'register_keyword_process':
         if "exit" in user_message:
             reply = "登録ありがとうございました。"
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
             conn.commit()
         else:
-
             reply = "登録しました。\n続けて登録したい場合は語彙を選択してください\n終了する場合はexitを入力してください。"
 
     else:
