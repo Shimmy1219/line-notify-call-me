@@ -83,15 +83,15 @@ def make_button_template(text,title,buttons_list):
     )
     return message_template
 
-def record_session(exists,column_session,session,column_userid,userid):
+def record_session(exists,session,userid):
     DATABASE_URL = os.environ.get('DATABASE_URL')
 
     conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
     cur = conn.cursor()
     if exists == True:
-        cur.execute("UPDATE session SET {} = '{}' WHERE {} = '{}'".format(column_session,session,column_userid,userid))
+        cur.execute("UPDATE session SET session_id = '{}' WHERE userid = '{}'".format(session,userid))
     else:
-        cur.execute("INSERT INTO session ({},{}) VALUES ({},{})".format(column_session,column_userid,session,userid))
+        cur.execute("INSERT INTO session (session_id,userid) VALUES ({},{})".format(session,userid))
 
 def determine_to_send(user_message,userid):
     DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -104,7 +104,7 @@ def determine_to_send(user_message,userid):
     if "reset" in user_message:
         cur.execute("UPDATE session SET session = 'normal' WHERE userid = '{}'".format(userid))
     elif "ログイン" in user_message or "ろぐいん" in user_message:
-        record_session(is_exists_user,'session','authentication_in_process','userid',userid)
+        record_session(is_exists_user,'authentication_in_process',userid)
         reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
     elif is_exists_user == True and session == 'authentication_in_process':
         if user_message.isdecimal() == False:
@@ -115,15 +115,15 @@ def determine_to_send(user_message,userid):
     elif "登録" in user_message or "とうろく" in user_message:
         reply, account_list = pushed_register_keyword(userid)
         if len(account_list) > 1:
-            record_session(is_exists_user,'session','select_account_process_to_register_word','userid',userid)
+            record_session(is_exists_user,'select_account_process_to_register_word',,userid)
             button_list = []
             for i in range (len(account_list)):
                 button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
                 button_list.append(button_obj)
             reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
-        record_session(is_exists_user,'session','register_keyword_process','userid',userid)
+        record_session(is_exists_user,'register_keyword_process',userid)
     elif is_exists_user == True and session == 'select_account_process_to_register_word':
-        record_session(is_exists_user,'session','register_keyword_process','userid',userid)
+        record_session(is_exists_user,'register_keyword_process',userid)
         reply = "キーワードを送信してください"
     elif register_keyword_process:
         if "exit" in user_message:
