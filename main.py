@@ -67,11 +67,6 @@ def handle_message(event):
         sending_message
     )
 
-authentication_in_process = False #twittterの認証をするプロセス
-register_keyword_process = False #キーワードを登録するprocess
-select_account_process = False #アカウントを選択するprocess
-selected_account = None
-
 def make_button_template(text,title,buttons_list):
     message_template = TemplateSendMessage(
         alt_text='Buttons template',
@@ -105,7 +100,7 @@ def determine_to_send(user_message,userid):
     if is_exists_user:
         cur.execute('SELECT session_id FROM session WHERE userid = %s',(userid,))
         session = cur.fetchone()[0]
-        print(session)
+        print("現在のセッションは"+ session+"です")
     if "reset" in user_message:
         cur.execute("UPDATE session SET session = 'normal' WHERE userid = '{}'".format(userid))
     elif "ログイン" in user_message or "ろぐいん" in user_message:
