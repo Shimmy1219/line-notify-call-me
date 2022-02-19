@@ -94,6 +94,7 @@ def record_session(exists,session,userid):
     else:
         cur.execute("INSERT INTO session (session_id,userid) VALUES (%s,%s)",(session,userid))
         print("INSERTしました")
+    cur.commit()
 
 def determine_to_send(user_message,userid):
     DATABASE_URL = os.environ.get('DATABASE_URL')
