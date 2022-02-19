@@ -142,7 +142,7 @@ def determine_to_send(user_message,userid):
             conn.commit()
         else:
             cur.execute("SELECT logined_twitterid FROM session WHERE userid = '{}' AND session_id = '{}'".format(userid,session))
-            screen_name = cur.fetchone()
+            screen_name = cur.fetchone()[0]
             register_keyword(userid,screen_name,user_message)
             reply = "登録しました。\n続けて登録したい場合は語彙を選択してください\n終了する場合はexitを入力してください。"
 
