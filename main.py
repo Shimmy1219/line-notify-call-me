@@ -89,7 +89,7 @@ def record_session(exists,session,userid):
     conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
     cur = conn.cursor()
     if exists == True:
-        cur.execute("UPDATE session SET session_id = '%s' WHERE userid = '%s'",(session,userid))
+        cur.execute("UPDATE session SET session_id = %s WHERE userid = %s",(session,userid))
         print("UPDATEしました")
     else:
         cur.execute("INSERT INTO session (session_id,userid) VALUES (%s,%s)",(session,userid))
