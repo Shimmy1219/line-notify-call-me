@@ -73,12 +73,9 @@ def make_button_template(text,title,buttons_list):
     message_template = TemplateSendMessage(
         alt_text='Buttons template',
         template=ButtonsTemplate(
-            text="にゃーん",
-            title="タイトルだよ",
-            actions=[
-                MessageAction(label="1",text="2"),
-                MessageAction(label="3",text="4")
-            ]
+            text=text,
+            title=title,
+            actions=buttons_list
     )
     )
     return message_template
