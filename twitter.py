@@ -110,6 +110,7 @@ def register_keyword(userid,screen_name,keyword):
   result = cur.fetchone()[0]
   if result == False:
     cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword),userid,screen_name))
+    conn.commit()
   else:
     cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))
     list = cur.fetchone()
