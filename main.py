@@ -83,7 +83,7 @@ def make_button_template(text,title,buttons_list):
     )
     return message_template
 
-def record_session(exists,session,userid,column_session='session_id'):
+def record_session(exists,session,userid,column_session="session_id"):
     DATABASE_URL = os.environ.get('DATABASE_URL')
 
     conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
