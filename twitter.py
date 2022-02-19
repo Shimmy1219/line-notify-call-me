@@ -78,7 +78,7 @@ def authentication_final(user_verifier,userid):
   except tweepy.TweepError:
     return 'Error! Failed to get access token.'
 
-def register_keyword(userid):
+def pushed_register_keyword(userid):
   DATABASE_URL = os.environ.get('DATABASE_URL')
 
   conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
@@ -86,4 +86,21 @@ def register_keyword(userid):
 
   cur.execute('SELECT * FROM database WHERE userid = %s',(userid,))
   res = cur.fetchall()
-  print(res)
+
+  cur.close()
+  conn.close()
+  if len(res) == 1:
+    return "キーワードを送信してください。",res
+  else:
+    for account in res:
+      account[6]
+    return "複数のアカウントでログインされています。キーワードを設定するアカウントを選択してください。", res
+
+def register_keyword(keyword):
+  DATABASE_URL = os.environ.get('DATABASE_URL')
+
+  conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
+  cur = conn.cursor()
+
+  cur.execute('INSERT INTO database ')
+

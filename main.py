@@ -8,12 +8,12 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    FollowEvent, MessageEvent, TextMessage, TextSendMessage, ImageMessage, ImageSendMessage, TemplateSendMessage,
+    FollowEvent, MessageEvent, TextMessage, TextSendMessage, ImageMessage, ImageSendMessage, TemplateSendMessage, URIAction, PostbackAction,
     ButtonsTemplate, PostbackTemplateAction, MessageTemplateAction, URITemplateAction
 )
 import os
 
-from twitter import authorize_url, authentication_final,register_keyword
+from twitter import authorize_url, authentication_final,pushed_register_keyword
 
 # 軽量なウェブアプリケーションフレームワーク:Flask
 app = Flask(__name__)
@@ -64,11 +64,31 @@ def handle_message(event):
         sending_message
     )
 
-authentication_in_process = False
-register_keyword_process = False
+authentication_in_process = False #twittterの認証をするプロセス
+register_keyword_process = False #キーワードを登録するprocess
+select_account_process = False #アカウントを選択するprocess
+selected_account = None
+
+def make_button_template(alt,text,title,buttons_list):
+    message_template = TemplateSendMessage(
+        alt_text="にゃーん",
+        template=ButtonsTemplate(
+            text=text,
+            title=title,
+            image_size="cover",
+            thumbnail_image_url="https:",
+            actions=[
+                PostbackAction(
+                    uri="https://任意のページURL",
+                    label="URIアクションのLABEL"
+                )
+            ]
+        )
+    )
+    return message_template
 
 def determine_to_send(user_message,userid):
-    global authentication_in_process, register_keyword_process
+    global authentication_in_process, register_keyword_process, select_account_process
     if "ログイン" in user_message or "ろぐいん" in user_message:
         reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
         authentication_in_process = True;
@@ -76,14 +96,23 @@ def determine_to_send(user_message,userid):
         authentication_in_process = False
         reply = authentication_final(user_message,userid)
     elif "登録" in user_message or "とうろく" in user_message:
-        reply = register_keyword(userid)
+        reply, account_list = pushed_register_keyword(userid)
+        if len(account_list) != 1:
+            select_account_process = True
         register_keyword_process = True;
-    elif "ひろむ" in user_message or "洸夢" in user_message:
-        reply = "どうされましたか"
-    elif "ささん" in user_message:
-        reply = "呼びましたか?"
-    elif "こんにちは" in user_message:
-        reply = "こんにちは"
+    elif select_account_process:
+        select_account_process = False
+        reply = "キーワードを送信してください"
+    elif register_keyword_process:
+        if "exit" in user_message:
+            reply = "登録ありがとうございました。"
+            register_keyword_process =  False
+        else:
+            reply = "登録しました。\n続けて登録したい場合は語彙を選択してください\n終了する場合はexitを入力してください。"
+    elif "reset" in user_message:
+        authentication_in_process = False #twittterの認証をするプロセス
+        register_keyword_process = False #キーワードを登録するprocess
+        select_account_process = False #アカウントを選択するprocess
     else:
         reply = '「' + user_message + '」って何？'
     return reply
