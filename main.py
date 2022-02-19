@@ -13,7 +13,9 @@ from linebot.models import (
 )
 import os
 
-from twitter import authorize_url, authentication_final,pushed_register_keyword
+from twitter import authorize_url, authentication_final,pushed_register_keyword,is_exists
+
+import psycopg2
 
 # 軽量なウェブアプリケーションフレームワーク:Flask
 app = Flask(__name__)
@@ -53,10 +55,11 @@ def callback():
 # MessageEvent
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-
+    print(event.message.text)
     sending_message = determine_to_send(event.message.text,event.source.user_id)
 
     if type(sending_message) == str:
+        print(sending_message)
         sending_message = TextSendMessage(text=sending_message)
 
     line_bot_api.reply_message(
@@ -80,39 +83,52 @@ def make_button_template(text,title,buttons_list):
     )
     return message_template
 
+def record_session(exists,column_session,session,column_userid,userid):
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+
+    conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
+    cur = conn.cursor()
+    if exists == True:
+        cur.execute("UPDATE session SET {} = '{}' WHERE {} = '{}'".format(column_session,session,column_userid,userid))
+    else:
+        cur.execute("INSERT INTO session ({},{}) VALUES ({},{})".format(column_session,column_userid,session,userid))
+
 def determine_to_send(user_message,userid):
-    global authentication_in_process, register_keyword_process, select_account_process
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+
+    conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
+    cur = conn.cursor()
+    is_exists_user = is_exists('session','userid',userid)
+    if is_exists_user:
+        session = cur.execute('SELECT session FROM session WHERE userid = %s',(userid,))
     if "reset" in user_message:
-        authentication_in_process = False #twittterの認証をするプロセス
-        register_keyword_process = False #キーワードを登録するprocess
-        select_account_process = False #アカウントを選択するprocess
+        cur.execute("UPDATE session SET session = 'normal' WHERE userid = '{}'".format(userid))
     elif "ログイン" in user_message or "ろぐいん" in user_message:
-        select_account_process = False
+        record_session(is_exists_user,'session','authentication_in_process','userid',userid)
         reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
-        authentication_in_process = True;
-    elif authentication_in_process: # add regex to make sure the format matches
+    elif is_exists_user == True and session == 'authentication_in_process':
         if user_message.isdecimal() == False:
             reply = "上記のURLにアクセスし、表示される7桁の番号を入力してください。キャンセルの場合はresetと入力してください。"
         else:
-            authentication_in_process = False
             reply = authentication_final(user_message,userid)
+            cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
     elif "登録" in user_message or "とうろく" in user_message:
         reply, account_list = pushed_register_keyword(userid)
         if len(account_list) > 1:
-            select_account_process = True
+            record_session(is_exists_user,'session','select_account_process_to_register_word','userid',userid)
             button_list = []
             for i in range (len(account_list)):
                 button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
                 button_list.append(button_obj)
             reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
-        register_keyword_process = True;
-    elif select_account_process:
-        select_account_process = False
+        record_session(is_exists_user,'session','register_keyword_process','userid',userid)
+    elif is_exists_user == True and session == 'select_account_process_to_register_word':
+        record_session(is_exists_user,'session','register_keyword_process','userid',userid)
         reply = "キーワードを送信してください"
     elif register_keyword_process:
         if "exit" in user_message:
             reply = "登録ありがとうございました。"
-            register_keyword_process =  False
+            cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
         else:
 
             reply = "登録しました。\n続けて登録したい場合は語彙を選択してください\n終了する場合はexitを入力してください。"

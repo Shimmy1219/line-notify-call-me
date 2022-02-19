@@ -13,11 +13,11 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 conn = psycopg2.connect(DATABASE_URL)
 cur = conn.cursor()
 
-def is_exists(column_name,data): #コラムにデータがあるか確認する。あればTrueを返す
+def is_exists(table,column_name,data): #コラムにデータがあるか確認する。あればTrueを返す
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
     cur.execute(
-      "SELECT EXISTS (SELECT * FROM database WHERE {} = '{}')".format(column_name,data))
+      "SELECT EXISTS (SELECT * FROM {} WHERE {} = '{}')".format(table,column_name,data))
     result = cur.fetchone()[0]
     print(result)
     return result #return True or False
@@ -55,7 +55,7 @@ def authentication_final(user_verifier,userid): #Twitterの認証をしてユー
       user = api.verify_credentials()
     except:
       return "The user credentials are invalid."
-    if is_exists('twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
+    if is_exists('database','twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
       try: #データベースにユーザーを登録
         cur.execute(
         "INSERT INTO database (\
@@ -85,7 +85,7 @@ def pushed_register_keyword(userid):
   conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
   cur = conn.cursor()
 
-  if is_exists('userid',userid) == True:
+  if is_exists('database','userid',userid) == True:
     cur.execute('SELECT * FROM database WHERE userid = %s',(userid,))
     res = cur.fetchall()
     cur.close()
