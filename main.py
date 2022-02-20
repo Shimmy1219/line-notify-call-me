@@ -110,7 +110,7 @@ def determine_to_send(user_message,userid):
             record_session(is_exists_user,'authentication_in_process',userid)
             reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
         else:
-            reply = "操作が間違っています。"
+            reply = "操作が間違っています。resetと入力すると通常状態に戻ります。"
     elif is_exists_user == True and session == 'authentication_in_process':
         if user_message.isdecimal() == False:
             reply = "上記のURLにアクセスし、表示される7桁の番号を入力してください。キャンセルの場合はresetと入力してください。"
@@ -133,7 +133,7 @@ def determine_to_send(user_message,userid):
                 record_session(is_exists_user,account_list[0][5],userid,'logined_twitterid')
                 reply = "キーワードを送信してください"
         else:
-            reply = "操作が間違えています。"
+            reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
     elif is_exists_user == True and session == 'select_account_process_to_register_word':
         record_session(is_exists_user,'register_keyword_process',userid)
         record_session(is_exists_user,user_message,userid,'logined_twitterid')
