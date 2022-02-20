@@ -104,6 +104,7 @@ def determine_to_send(user_message,userid):
     if "reset" in user_message:
         cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
         conn.commit()
+        reply = "キャンセルしました。"
     elif "ログイン" in user_message or "ろぐいん" in user_message:
         if is_exists_user == False:
             record_session(is_exists_user,'authentication_in_process',userid)
