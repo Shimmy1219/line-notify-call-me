@@ -11,5 +11,5 @@ def push_message():
 
     line_bot_api.push_message(
         USER_ID,
-        TextSendMessage(text='ぷっしゅめっせーじです。やあ!'))
+        TextSendMessage(text='よろしく'))
 
