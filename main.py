@@ -102,10 +102,14 @@ def determine_to_send(user_message,userid):
         session = cur.fetchone()[0]
         print("現在のセッションは"+ session+"です")
     if "reset" in user_message:
-        cur.execute("UPDATE session SET session = 'normal' WHERE userid = '{}'".format(userid))
+        cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
+        conn.commit()
     elif "ログイン" in user_message or "ろぐいん" in user_message:
-        record_session(is_exists_user,'authentication_in_process',userid)
-        reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
+        if is_exists_user == False:
+            record_session(is_exists_user,'authentication_in_process',userid)
+            reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
+        else:
+            reply = "操作が間違っています。"
     elif is_exists_user == True and session == 'authentication_in_process':
         if user_message.isdecimal() == False:
             reply = "上記のURLにアクセスし、表示される7桁の番号を入力してください。キャンセルの場合はresetと入力してください。"
@@ -114,18 +118,21 @@ def determine_to_send(user_message,userid):
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
             conn.commit()
     elif "登録" in user_message or "とうろく" in user_message:
-        reply, account_list = pushed_register_keyword(userid)
-        if len(account_list) > 1:
-            record_session(is_exists_user,'select_account_process_to_register_word',userid)
-            button_list = []
-            for i in range (len(account_list)):
-                button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
-                button_list.append(button_obj)
-            reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
-        if len(account_list) == 1:
-            record_session(is_exists_user,'register_keyword_process',userid)
-            record_session(is_exists_user,account_list[0][5],userid,'logined_twitterid')
-            reply = "キーワードを送信してください"
+        if is_exists_user == False:
+            reply, account_list = pushed_register_keyword(userid)
+            if len(account_list) > 1:
+                record_session(is_exists_user,'select_account_process_to_register_word',userid)
+                button_list = []
+                for i in range (len(account_list)):
+                    button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
+                    button_list.append(button_obj)
+                reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
+            if len(account_list) == 1:
+                record_session(is_exists_user,'register_keyword_process',userid)
+                record_session(is_exists_user,account_list[0][5],userid,'logined_twitterid')
+                reply = "キーワードを送信してください"
+        else:
+            reply = "操作が間違えています。"
     elif is_exists_user == True and session == 'select_account_process_to_register_word':
         record_session(is_exists_user,'register_keyword_process',userid)
         record_session(is_exists_user,user_message,userid,'logined_twitterid')
