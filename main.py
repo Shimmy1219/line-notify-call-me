@@ -165,7 +165,12 @@ def determine_to_send(user_message,userid):
                 record_session(True,account_list[0][5],userid,'logined_twitterid') #ログイン済の垢をセッションに登録
                 cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
                 keyword_list = cur.fetchone()[0] #登録されているキーワードをリストで取得
-                reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",keyword_list)
+                print("登録されているキーワードは" + str(keyword_list))
+                button_list = [] #ボタンのリストを作る
+                for i in range (len(keyword_list)):
+                    button_obj = MessageAction(label=keyword_list[i],text=keyword_list[i])
+                    button_list.append(button_obj)
+                reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",button_list)
         else:
             reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
     elif is_exists_user == True and session == 'select_account_process_to_remove_word': #もしセッション選択プロセスなら
@@ -174,7 +179,11 @@ def determine_to_send(user_message,userid):
         cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
         keyword_list = cur.fetchone()[0] #登録されているキーワードリストを取得
         print("登録されているキーワードは" + str(keyword_list))
-        reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",keyword_list)
+        button_list = [] #ボタンのリストを作る
+        for i in range (len(keyword_list)):
+            button_obj = MessageAction(label=keyword_list[i],text=keyword_list[i])
+            button_list.append(button_obj)
+        reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",button_list)
     elif is_exists_user == True and session == 'remove_keyword_process': #もし
         if "exit" in user_message:
             reply = "ありがとうございました。"
