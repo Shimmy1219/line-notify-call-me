@@ -119,6 +119,26 @@ def register_keyword(userid,screen_name,keyword):
     keyword_list.append(keyword)
     cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword_list),userid,screen_name))
     conn.commit()
+
+  def remove_keyword(userid,screen_name,keyword):
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+
+    conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))
+    result = cur.fetchone()[0]
+    print(result)
+    if result == None:
+      return "なにも登録されていません"
+    else:
+      cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))
+      keyword_list = cur.fetchone()[0]
+      keyword_list.remove(keyword)
+      cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword_list),userid,screen_name))
+      conn.commit()
+      return keyword + "を削除しました"
+
   cur.close()
   conn.close()
 

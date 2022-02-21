@@ -1,3 +1,4 @@
+from black import standalone_comment_split
 import tweepy
 from pprint import pprint
 import time
@@ -45,32 +46,35 @@ class getTweet():
       auth.set_access_token(AT, AS)
       api = tweepy.API(auth)
 
-      for status in api.home_timeline(count=2):
-      #見映えのため区切る
-        print('-------------------------------------------')
-        print(record[6])
-        #ユーザ名表示
-        print('name:' + status.user.name)
-        #内容表示
-        print(status.text)
-        for keyword in record[7]:
-          if keyword in status.text:
-            print("Push Message!!")
-        #print(status.id_str)
-        #print(status.user.screen_name)
-        #print(status.user.id_str)
-        print(status.user.profile_image_url_https)
-        #print(status.created_at)
-        #pprint(status)
+      statuses = api.home_timeline(count=20)
+      x = 0
+      for status in statuses:
+        if (status.created_at - record[8]).total_seconds() > 0:
+        #見映えのため区切る
+          print('-------------------------------------------')
+          print(record[6])
+          #ユーザ名表示
+          print('name:' + status.user.name)
+          #内容表示
+          print(status.text)
+          if record[4] != status.user.id_str:
+            for keyword in record[7]:
+              if keyword in status.text:
+                push_message(record[1],status.text,status.user.name,status.user.profile_image_url_https)
+          if x == 0:
+            cur.execute("UPDATE database SET last_tweet_created_at = '{}'  WHERE id = '{}'".format(status.created_at,record[0]))
+            conn.commit()
+          x+=1
 
-STARTTIME = time.time()
-cur.execute("SELECT id FROM database")
-num = len(cur.fetchall())
-Thread_num = num // 250 + 1
-interval = num // Thread_num + 1
-for i in range(Thread_num):
-  arg = i * interval
-  job = Thread(target=getTweet, args=(interval,arg))
-  job.start()
-ENDTIME = time.time()
-print(ENDTIME-STARTTIME)
+def run_thread():
+  STARTTIME = time.time()
+  cur.execute("SELECT id FROM database")
+  num = len(cur.fetchall())
+  Thread_num = num // 250 + 1
+  interval = num // Thread_num + 1
+  for i in range(Thread_num):
+    arg = i * interval
+    job = Thread(target=getTweet, args=(interval,arg))
+    job.start()
+  ENDTIME = time.time()
+  print(ENDTIME-STARTTIME)

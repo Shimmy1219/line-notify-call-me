@@ -1,4 +1,5 @@
 # インポートするライブラリ
+from pprint import pprint
 from flask import Flask, request, abort
 
 from linebot import (
@@ -13,7 +14,7 @@ from linebot.models import (
 )
 import os
 
-from twitter import authorize_url, authentication_final,pushed_register_keyword,is_exists,register_keyword
+from twitter import authorize_url, authentication_final,pushed_register_keyword,is_exists,register_keyword,remove_keyword
 
 import psycopg2
 
@@ -96,7 +97,7 @@ def determine_to_send(user_message,userid):
 
     conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
     cur = conn.cursor()
-    is_exists_user = is_exists('session','userid',userid)
+    is_exists_user = is_exists('session','userid',userid) #セッションにいるかどうか
     if is_exists_user:
         cur.execute('SELECT session_id FROM session WHERE userid = %s',(userid,))
         session = cur.fetchone()[0]
@@ -118,36 +119,72 @@ def determine_to_send(user_message,userid):
             reply = authentication_final(user_message,userid)
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
             conn.commit()
-    elif "登録" in user_message or "とうろく" in user_message:
-        if is_exists_user == False:
-            reply, account_list = pushed_register_keyword(userid)
-            if len(account_list) > 1:
-                record_session(is_exists_user,'select_account_process_to_register_word',userid)
-                button_list = []
+    elif "登録" in user_message or "とうろく" in user_message: #登録したい
+        if is_exists_user == False: #もしセッションにいなかったら
+            reply, account_list = pushed_register_keyword(userid) #ログインしている垢の数を取得
+            if len(account_list) > 1: #もしログイン済みの垢が複数あったら
+                record_session(is_exists_user,'select_account_process_to_register_word',userid) #セッション名を登録
+                button_list = [] #ボタンのリストを作る
                 for i in range (len(account_list)):
                     button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
                     button_list.append(button_obj)
                 reply = make_button_template("キーワードを登録するアカウントを選択してください","ログイン済のアカウント",button_list)
-            if len(account_list) == 1:
-                record_session(is_exists_user,'register_keyword_process',userid)
-                record_session(is_exists_user,account_list[0][5],userid,'logined_twitterid')
+            if len(account_list) == 1: #もしログインしてる垢が１つなら
+                pprint(account_list)
+                record_session(is_exists_user,'register_keyword_process',userid) #セッション名を登録
+                record_session(True,account_list[0][5],userid,'logined_twitterid') #ログインしている垢を登録
                 reply = "キーワードを送信してください"
         else:
             reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
-    elif is_exists_user == True and session == 'select_account_process_to_register_word':
-        record_session(is_exists_user,'register_keyword_process',userid)
-        record_session(is_exists_user,user_message,userid,'logined_twitterid')
+    elif is_exists_user == True and session == 'select_account_process_to_register_word': #セッションが垢選択セッションなら
+        record_session(is_exists_user,'register_keyword_process',userid) #セッション名を登録
+        record_session(is_exists_user,user_message,userid,'logined_twitterid') #ログインしている垢を登録
         reply = "キーワードを送信してください"
-    elif is_exists_user == True and session == 'register_keyword_process':
-        if "exit" in user_message:
+    elif is_exists_user == True and session == 'register_keyword_process': #セッションが登録プロセスなら
+        if "exit" in user_message: #もしexitが入力されたら
             reply = "登録ありがとうございました。"
+            cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid)) #セッションから削除
+            conn.commit()
+        else:
+            cur.execute("SELECT logined_twitterid FROM session WHERE userid = '{}' AND session_id = '{}'".format(userid,session))
+            screen_name = cur.fetchone()[0] #ログインしている垢を取得
+            register_keyword(userid,screen_name,user_message) #キーワードを登録
+            reply = "登録しました。\n続けて登録したい場合はキーワードを送信してください\n終了する場合はexitを入力してください。"
+    elif "キーワード削除" in user_message: #キーワードを削除したかったら
+        if is_exists_user == False: #もしセッションにいなかったら
+            reply, account_list = pushed_register_keyword(userid) #ログインしている垢を取得
+            if len(account_list) > 1: #もしログイン済みの垢が複数あったら
+                record_session(is_exists_user,'select_account_process_to_remove_word',userid) #セッションを垢選択プロセスにする
+                button_list = [] #垢リストを作成
+                for i in range (len(account_list)):
+                    button_obj = MessageAction(label=account_list[i][6],text=account_list[i][5])
+                    button_list.append(button_obj)
+                reply = make_button_template("キーワードを削除するアカウントを選択してください","ログイン済のアカウント",button_list)
+            if len(account_list) == 1: #もしログインしてる垢が１つなら
+                record_session(is_exists_user,'remove_keyword_process',userid) #セッションを削除プロセスに移動
+                record_session(True,account_list[0][5],userid,'logined_twitterid') #ログイン済の垢をセッションに登録
+                cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
+                keyword_list = cur.fetchone()[0] #登録されているキーワードをリストで取得
+                reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",keyword_list)
+        else:
+            reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
+    elif is_exists_user == True and session == 'select_account_process_to_remove_word': #もしセッション選択プロセスなら
+        record_session(is_exists_user,'remove_keyword_process',userid) #セッションを削除プロセスに移動
+        record_session(is_exists_user,user_message,userid,'logined_twitterid') #ユーザーが送信したIDを登録する
+        cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
+        keyword_list = cur.fetchone()[0] #登録されているキーワードリストを取得
+        reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",keyword_list)
+    elif is_exists_user == True and session == 'remove_keyword_process': #もし
+        if "exit" in user_message:
+            reply = "ありがとうございました。"
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
             conn.commit()
         else:
             cur.execute("SELECT logined_twitterid FROM session WHERE userid = '{}' AND session_id = '{}'".format(userid,session))
-            screen_name = cur.fetchone()[0]
-            register_keyword(userid,screen_name,user_message)
-            reply = "登録しました。\n続けて登録したい場合はキーワードを送信してください\n終了する場合はexitを入力してください。"
+            screen_name = cur.fetchone()[0] #登録しているリストを取得
+            reply = remove_keyword(userid,screen_name,user_message) #キーワードを削除する
+            cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
+            conn.commit()
 
     else:
         reply = '「' + user_message + '」って何？'
