@@ -5,6 +5,7 @@ import psycopg2
 from threading import Thread
 from linebot import LineBotApi
 from linebot.models import TextSendMessage,Sender
+import datetime
 
 CK = 'Bf75IpcBEdilBxemrqLjqsO4w'
 CS = '4njUIUpTJtLfzKUTHZD1r9c0CHTTWY41IwHFpKNJ1If2EAZhab'
@@ -47,7 +48,10 @@ class getTweet():
       statuses = api.home_timeline(count=20)
       x = 0
       for status in statuses:
-        if (status.created_at - record[8]).total_seconds() > 0:
+        last_time = record[8]
+        if record[8] == None:
+          last_time = datetime.datetime(2022,2,21,17,22,00)
+        if (status.created_at - last_time).total_seconds() > 0:
         #見映えのため区切る
           print('-------------------------------------------')
           print(record[6])

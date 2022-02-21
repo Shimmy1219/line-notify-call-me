@@ -173,6 +173,7 @@ def determine_to_send(user_message,userid):
         record_session(is_exists_user,user_message,userid,'logined_twitterid') #ユーザーが送信したIDを登録する
         cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
         keyword_list = cur.fetchone()[0] #登録されているキーワードリストを取得
+        print("登録されているキーワードは" + str(keyword_list))
         reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",keyword_list)
     elif is_exists_user == True and session == 'remove_keyword_process': #もし
         if "exit" in user_message:
