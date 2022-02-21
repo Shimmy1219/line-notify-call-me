@@ -3,3 +3,5 @@ line-bot-sdk==2.1.0
 tweepy==3.10.0
 psycopg2==2.9.3
 markupsafe==2.0.1
+APScheduler==3.8.1
+requests==2.25.1

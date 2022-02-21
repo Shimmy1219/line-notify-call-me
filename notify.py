@@ -1,8 +1,6 @@
-from black import standalone_comment_split
 import tweepy
 from pprint import pprint
 import time
-import os
 import psycopg2
 from threading import Thread
 from linebot import LineBotApi
