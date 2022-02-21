@@ -13,3 +13,4 @@ def push_message():
         USER_ID,
         TextSendMessage(text='よろしく'))
 
+print(3//2)

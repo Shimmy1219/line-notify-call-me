@@ -1,10 +1,14 @@
-from apscheduler.schedulers.blocking import BlockingScheduler
+
 from push_message import push_message
-sched = BlockingScheduler()
+import time
 
+S = time.time()
 
-@sched.scheduled_job('interval', minutes=1)
-def timed_job():
+for i in range(10):
     push_message()
+    if i < 10:
+        time.sleep(60)
 
-sched.start()
+E = time.time()
+print(E-S)
+

@@ -3,6 +3,7 @@ from pprint import pprint
 import time
 import os
 import psycopg2
+from threading import Thread
 
 CK = 'Bf75IpcBEdilBxemrqLjqsO4w'
 CS = '4njUIUpTJtLfzKUTHZD1r9c0CHTTWY41IwHFpKNJ1If2EAZhab'
@@ -15,11 +16,11 @@ conn = psycopg2.connect(DATABASE_URL)
 cur = conn.cursor()
 
 class getTweet():
-  def __init__(self):
-    self.run()
+  def __init__(self,lim,offset):
+    self.do(lim,offset)
 
-  def run(e):
-    cur.execute("SELECT * FROM database ORDER BY id LIMIT 4 OFFSET 0 ")
+  def do(e,lim,offset):
+    cur.execute("SELECT * FROM database ORDER BY id LIMIT {} OFFSET {} ".format(str(lim),str(offset)))
     database_list = [s for s in cur.fetchall() if s[7] != None]
 
     for record in database_list:
@@ -28,7 +29,7 @@ class getTweet():
       auth.set_access_token(AT, AS)
       api = tweepy.API(auth)
 
-      for status in api.home_timeline(count=10):
+      for status in api.home_timeline(count=2):
       #見映えのため区切る
         print('-------------------------------------------')
         print(record[6])
@@ -47,7 +48,13 @@ class getTweet():
         #pprint(status)
 
 STARTTIME = time.time()
-getTweet()
+cur.execute("SELECT id FROM database")
+num = len(cur.fetchall())
+Thread_num = num // 250 + 1
+interval = num // Thread_num + 1
+for i in range(Thread_num):
+  arg = i * interval
+  job = Thread(target=getTweet, args=(interval,arg))
+  job.start()
 ENDTIME = time.time()
-print(60/(ENDTIME-STARTTIME))
 print(ENDTIME-STARTTIME)
