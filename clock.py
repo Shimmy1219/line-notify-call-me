@@ -6,7 +6,7 @@ S = time.time()
 
 for i in range(10):
     push_message()
-    if i < 10:
+    if i < 9:
         time.sleep(60)
 
 E = time.time()
