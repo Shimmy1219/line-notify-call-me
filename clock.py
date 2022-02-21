@@ -5,7 +5,7 @@ import time
 S = time.time()
 
 for i in range(10):
-    push_message()
+    push_message(i)
     if i < 9:
         time.sleep(60)
 

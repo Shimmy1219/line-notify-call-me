@@ -4,6 +4,8 @@ import time
 import os
 import psycopg2
 from threading import Thread
+from linebot import LineBotApi
+from linebot.models import TextSendMessage,Sender
 
 CK = 'Bf75IpcBEdilBxemrqLjqsO4w'
 CS = '4njUIUpTJtLfzKUTHZD1r9c0CHTTWY41IwHFpKNJ1If2EAZhab'
@@ -14,6 +16,20 @@ DATABASE_URL = 'postgres://vsszkbimyldkmr:cfa2e2f3909965bf340fd61f95648e6311616a
 
 conn = psycopg2.connect(DATABASE_URL)
 cur = conn.cursor()
+
+def push_message(userid,text,name,url):
+    LINE_CHANNEL_ACCESS_TOKEN = 'sEsX2yDRvj454rjlxv8JQ4coXHyUTaAwOextJx0YvtkGh2eZUPwz6opSHz3HKj7erXf+eMN5gXdFfwnTjsdMsChCBsMAeHbiNwfqEZZOBk5OSLlSLHeZVoFl5CXvyM0KKslYItAO/c9kwdpKvKQcegdB04t89/1O/w1cDnyilFU='
+    USER_ID = userid
+
+    line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+
+    line_bot_api.push_message(
+        USER_ID,
+        TextSendMessage(
+            text=text,
+            sender=Sender(name=name,icon_url=url)
+            )
+        )
 
 class getTweet():
   def __init__(self,lim,offset):
@@ -43,7 +59,7 @@ class getTweet():
         #print(status.id_str)
         #print(status.user.screen_name)
         #print(status.user.id_str)
-        #print(status.user.profile_image_url_https)
+        print(status.user.profile_image_url_https)
         #print(status.created_at)
         #pprint(status)
 
