@@ -117,9 +117,12 @@ def determine_to_send(user_message,userid):
             reply = "上記のURLにアクセスし、表示される7桁の番号を入力してください。キャンセルの場合はresetと入力してください。"
         else:
             reply = authentication_final(user_message,userid)
+            cur.execute('SELECT userid FROM database WHERE userid = %s',(userid,))
+            if len(cur.fetchall()) == 1:
+                line_bot_api.link_rich_menu_to_user(userid, "richmenu-c078890c117ca8e313d1d5f54735d9dc")
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
             conn.commit()
-    elif "登録" in user_message or "とうろく" in user_message: #登録したい
+    elif "登録" in user_message or "とうろく" in user_message: #キーワード登録したい
         if is_exists_user == False: #もしセッションにいなかったら
             reply, account_list = pushed_register_keyword(userid) #ログインしている垢の数を取得
             if len(account_list) > 1: #もしログイン済みの垢が複数あったら
@@ -134,6 +137,9 @@ def determine_to_send(user_message,userid):
                 record_session(is_exists_user,'register_keyword_process',userid) #セッション名を登録
                 record_session(True,account_list[0][5],userid,'logined_twitterid') #ログインしている垢を登録
                 reply = "キーワードを送信してください"
+            cur.execute('SELECT keyword FROM database WHERE userid = %s',(userid,))
+            if len(cur.fetchall()) == 1 and len(cur.fetchall()[0]) == 1:
+                line_bot_api.link_rich_menu_to_user(userid, "richmenu-0451994b328bb4d2525bf11584accbef")
         else:
             reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
     elif is_exists_user == True and session == 'select_account_process_to_register_word': #セッションが垢選択セッションなら
@@ -178,12 +184,15 @@ def determine_to_send(user_message,userid):
         record_session(is_exists_user,user_message,userid,'logined_twitterid') #ユーザーが送信したIDを登録する
         cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
         keyword_list = cur.fetchone()[0] #登録されているキーワードリストを取得
-        print("登録されているキーワードは" + str(keyword_list))
-        button_list = [] #ボタンのリストを作る
-        for i in range (len(keyword_list)):
-            button_obj = MessageAction(label=keyword_list[i],text=keyword_list[i])
-            button_list.append(button_obj)
-        reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",button_list)
+        if len(keyword_list) == 0:
+            reply = "キーワードは登録されていません"
+        else:
+            print("登録されているキーワードは" + str(keyword_list))
+            button_list = [] #ボタンのリストを作る
+            for i in range (len(keyword_list)):
+                button_obj = MessageAction(label=keyword_list[i],text=keyword_list[i])
+                button_list.append(button_obj)
+            reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",button_list)
     elif is_exists_user == True and session == 'remove_keyword_process': #もし
         if "exit" in user_message:
             reply = "ありがとうございました。"
