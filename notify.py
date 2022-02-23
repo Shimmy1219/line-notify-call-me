@@ -7,8 +7,8 @@ from linebot import LineBotApi
 from linebot.models import TextSendMessage,Sender
 import datetime
 
-CK = 'Bf75IpcBEdilBxemrqLjqsO4w'
-CS = '4njUIUpTJtLfzKUTHZD1r9c0CHTTWY41IwHFpKNJ1If2EAZhab'
+CK = 'ctiRJV5FXu2uBm9rW3ltLe0z2'
+CS = 'Gf2okVdVay66UO8MkQ18sTKTfvNMadJRuG5did1i5mRfLibHdw'
 
 auth = tweepy.OAuthHandler(CK, CS)
 
