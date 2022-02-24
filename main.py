@@ -202,7 +202,7 @@ def determine_to_send(user_message,userid):
         record_session(is_exists_user,user_message,userid,'logined_twitterid') #ユーザーが送信したIDを登録する
         cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
         keyword_list = cur.fetchone()[0] #登録されているキーワードリストを取得
-        if keyword_list == None:
+        if keyword_list == None or len(keyword_list) == 0:
             reply = "キーワードは登録されていません"
         else:
             record_session(is_exists_user,'remove_keyword_process',userid) #セッションを削除プロセスに移動
