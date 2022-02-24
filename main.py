@@ -150,13 +150,16 @@ def determine_to_send(user_message,userid):
     elif is_exists_user == True and session == 'register_keyword_process': #セッションが登録プロセスなら
         cur.execute("SELECT keyword FROM database WHERE userid = '{}'".format(userid))
         user_keyword_list = cur.fetchall()
+        print("user_keyword_listは" + str(user_keyword_list))
         first_register = True
         for keyword_list in user_keyword_list:
-            if len(keyword_list) > 0:
-                print(keyword_list)
+            if keyword_list[0] == None:
+                first_register = True
+            elif len(keyword_list) > 0:
+                print("キーワードは" + str(keyword_list))
                 first_register = False
                 break
-            print(first_register)
+        print(first_register)
         if "exit" in user_message: #もしexitが入力されたら
             reply = "登録ありがとうございました。"
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid)) #セッションから削除
