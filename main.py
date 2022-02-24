@@ -111,6 +111,8 @@ def determine_to_send(user_message,userid):
         cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
         conn.commit()
         reply = "キャンセルしました。"
+    elif "How to use" in user_message:
+        reply = "これは登録したキーワードがTwitterのタイムラインに出てくると通知するサービスです\nLogin for TwitterのボタンでTwitterにログインし、その後表示されるキーワード登録ボタンで通知してほしいキーワードを登録してください。"
     elif "ログイン" in user_message or "ろぐいん" in user_message: #ログインと入力されたら
         if is_exists_user == False:
             record_session(is_exists_user,'authentication_in_process',userid)
@@ -151,9 +153,10 @@ def determine_to_send(user_message,userid):
         first_register = True
         for keyword_list in user_keyword_list:
             if len(keyword_list) > 0:
+                print(keyword_list)
                 first_register = False
                 break
-
+            print(first_register)
         if "exit" in user_message: #もしexitが入力されたら
             reply = "登録ありがとうございました。"
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid)) #セッションから削除
