@@ -117,6 +117,8 @@ def determine_to_send(user_message,userid):
         if is_exists_user == False:
             record_session(is_exists_user,'authentication_in_process',userid)
             reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
+        elif is_exists_user == True and session == 'authentication_in_process':
+            reply = "上記のURLにアクセスして承認番号を送信してください。"
         else:
             quick_reply_list = ["reset","continue"]
             items = [QuickReplyButton(action=MessageAction(label=f"{word}", text=f"/{word}")) for word in quick_reply_list]
@@ -144,6 +146,8 @@ def determine_to_send(user_message,userid):
                 record_session(is_exists_user,'register_keyword_process',userid) #セッション名を登録
                 record_session(True,account_list[0][5],userid,'logined_twitterid') #ログインしている垢を登録
                 reply = "キーワードを送信してください"
+        elif is_exists_user == True and session == 'register_keyword_process' or session == 'register_keyword_process':
+            reply = "キーワードを送信してください"
         else:
             quick_reply_list = ["reset","continue"]
             items = [QuickReplyButton(action=MessageAction(label=f"{word}", text=f"/{word}")) for word in quick_reply_list]
