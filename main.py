@@ -29,6 +29,11 @@ LINE_CHANNEL_SECRET = os.environ["LINE_CHANNEL_SECRET"]
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
+rich_menu = {
+    'add_how':'richmenu-085de853cf35efb0ff72667940c0b689',
+    'add_reg':'richmenu-c078890c117ca8e313d1d5f54735d9dc',
+    'add_reg_del':'richmenu-0451994b328bb4d2525bf11584accbef'}
+
 
 @app.route("/")
 def hello_world():
@@ -98,30 +103,27 @@ def determine_to_send(user_message,userid):
     conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
     cur = conn.cursor()
     is_exists_user = is_exists('session','userid',userid) #セッションにいるかどうか
-    if is_exists_user:
+    if is_exists_user: #セッションにユーザーがいるかどうか
         cur.execute('SELECT session_id FROM session WHERE userid = %s',(userid,))
         session = cur.fetchone()[0]
         print("現在のセッションは"+ session+"です")
-    if "reset" in user_message:
+    if "reset" in user_message: #resetが入力されたらセッション情報を削除する
         cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
         conn.commit()
         reply = "キャンセルしました。"
-    elif "ログイン" in user_message or "ろぐいん" in user_message:
+    elif "ログイン" in user_message or "ろぐいん" in user_message: #ログインと入力されたら
         if is_exists_user == False:
             record_session(is_exists_user,'authentication_in_process',userid)
             reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
         else:
             reply = "操作が間違っています。resetと入力すると通常状態に戻ります。"
-    elif is_exists_user == True and session == 'authentication_in_process':
-        if user_message.isdecimal() == False:
-            reply = "上記のURLにアクセスし、表示される7桁の番号を入力してください。キャンセルの場合はresetと入力してください。"
-        else:
-            reply = authentication_final(user_message,userid)
-            cur.execute('SELECT userid FROM database WHERE userid = %s',(userid,))
-            if len(cur.fetchall()) == 1:
-                line_bot_api.link_rich_menu_to_user(userid, "richmenu-c078890c117ca8e313d1d5f54735d9dc")
-            cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
-            conn.commit()
+    elif is_exists_user == True and session == 'authentication_in_process': #ログインする処理
+        reply = authentication_final(user_message,userid)
+        cur.execute('SELECT userid FROM database WHERE userid = %s',(userid,))
+        if len(cur.fetchall()) == 1:
+            line_bot_api.link_rich_menu_to_user(userid, rich_menu["add_reg"])
+        cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
+        conn.commit()
     elif "登録" in user_message or "とうろく" in user_message: #キーワード登録したい
         if is_exists_user == False: #もしセッションにいなかったら
             reply, account_list = pushed_register_keyword(userid) #ログインしている垢の数を取得
@@ -137,9 +139,6 @@ def determine_to_send(user_message,userid):
                 record_session(is_exists_user,'register_keyword_process',userid) #セッション名を登録
                 record_session(True,account_list[0][5],userid,'logined_twitterid') #ログインしている垢を登録
                 reply = "キーワードを送信してください"
-            cur.execute('SELECT keyword FROM database WHERE userid = %s',(userid,))
-            if len(cur.fetchall()) == 1 and len(cur.fetchall()[0]) == 1:
-                line_bot_api.link_rich_menu_to_user(userid, "richmenu-0451994b328bb4d2525bf11584accbef")
         else:
             reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
     elif is_exists_user == True and session == 'select_account_process_to_register_word': #セッションが垢選択セッションなら
@@ -147,15 +146,26 @@ def determine_to_send(user_message,userid):
         record_session(is_exists_user,user_message,userid,'logined_twitterid') #ログインしている垢を登録
         reply = "キーワードを送信してください"
     elif is_exists_user == True and session == 'register_keyword_process': #セッションが登録プロセスなら
+        cur.execute("SELECT keyword FROM database WHERE userid = '{}'".format(userid))
+        user_keyword_list = cur.fetchall()
+        first_register = True
+        for keyword_list in user_keyword_list:
+            if len(keyword_list) > 0:
+                first_register = False
+                break
+
         if "exit" in user_message: #もしexitが入力されたら
             reply = "登録ありがとうございました。"
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid)) #セッションから削除
             conn.commit()
-        else:
+        else: #登録する
             cur.execute("SELECT logined_twitterid FROM session WHERE userid = '{}' AND session_id = '{}'".format(userid,session))
             screen_name = cur.fetchone()[0] #ログインしている垢を取得
             register_keyword(userid,screen_name,user_message) #キーワードを登録
             reply = "登録しました。\n続けて登録したい場合はキーワードを送信してください\n終了する場合はexitを入力してください。"
+        if first_register == True:
+            line_bot_api.link_rich_menu_to_user(userid, rich_menu["add_reg_del"])
+
     elif "キーワード削除" in user_message: #キーワードを削除したかったら
         if is_exists_user == False: #もしセッションにいなかったら
             reply, account_list = pushed_register_keyword(userid) #ログインしている垢を取得
@@ -180,13 +190,13 @@ def determine_to_send(user_message,userid):
         else:
             reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
     elif is_exists_user == True and session == 'select_account_process_to_remove_word': #もしセッション選択プロセスなら
-        record_session(is_exists_user,'remove_keyword_process',userid) #セッションを削除プロセスに移動
         record_session(is_exists_user,user_message,userid,'logined_twitterid') #ユーザーが送信したIDを登録する
         cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
         keyword_list = cur.fetchone()[0] #登録されているキーワードリストを取得
         if len(keyword_list) == 0:
             reply = "キーワードは登録されていません"
         else:
+            record_session(is_exists_user,'remove_keyword_process',userid) #セッションを削除プロセスに移動
             print("登録されているキーワードは" + str(keyword_list))
             button_list = [] #ボタンのリストを作る
             for i in range (len(keyword_list)):

@@ -43,39 +43,41 @@ def authentication_final(user_verifier,userid): #Twitterの認証をしてユー
   conn = psycopg2.connect(DATABASE_URL)
   cur = conn.cursor()
 
+  if user_verifier.isdecimal() == False: #もしユーザーが送信したのが数字でなかったら
+      reply = "上記のURLにアクセスし、表示される7桁の番号を入力してください。キャンセルの場合はresetと入力してください。"
+  else:
+    try:
+      ts = auth.get_access_token(user_verifier) #TWitterのアクセストークンを取得
+      token = ts[0]
+      secret = ts[1]
+      auth.set_access_token(token, secret)
+      api = tweepy.API(auth)
+      #api.update_status('test tweet!!!!!') # 認証が成功した時にツイートで確認したい方は使ってください
+      try: #認証が有効か確認。twitterのユーザーデータを返す
+        user = api.verify_credentials()
+      except:
+        return "The user credentials are invalid."
+      if is_exists('database','twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
+        try: #データベースにユーザーを登録
+          cur.execute(
+          "INSERT INTO database (\
+            userid, access_token, acess_token_secret, twitterid, screen_name, name\
+            ) VALUES(%s, %s, %s, %s, %s, %s)",
+              (userid, token, secret, user.id_str, user.screen_name, user.name))
+          conn.commit()
 
-  try:
-    ts = auth.get_access_token(user_verifier) #TWitterのアクセストークンを取得
-    token = ts[0]
-    secret = ts[1]
-    auth.set_access_token(token, secret)
-    api = tweepy.API(auth)
-    #api.update_status('test tweet!!!!!') # 認証が成功した時にツイートで確認したい方は使ってください
-    try: #認証が有効か確認。twitterのユーザーデータを返す
-      user = api.verify_credentials()
-    except:
-      return "The user credentials are invalid."
-    if is_exists('database','twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
-      try: #データベースにユーザーを登録
-        cur.execute(
-        "INSERT INTO database (\
-          userid, access_token, acess_token_secret, twitterid, screen_name, name\
-          ) VALUES(%s, %s, %s, %s, %s, %s)",
-            (userid, token, secret, user.id_str, user.screen_name, user.name))
-        conn.commit()
-
+          cur.close()
+          conn.close()
+          return '認証成功\nこんにちは！{}さん\nメニューからキーワードを登録することができます。'.format(user.name)
+        except:
+          return 'Error! Failed to access the database.'
+      else: #もし既にユーザーがデータベースにあったら
         cur.close()
         conn.close()
-        return '認証成功\nこんにちは！{}さん\nメニューからキーワードを登録することができます。'.format(user.name)
-      except:
-        return 'Error! Failed to access the database.'
-    else: #もし既にユーザーがデータベースにあったら
-      cur.close()
-      conn.close()
-      return '{}はログインされています'.format(user.screen_name)
+        return '{}はログインされています'.format(user.screen_name)
 
-  except tweepy.TweepError:
-    return 'Error! Failed to get access token.'
+    except tweepy.TweepError:
+      return 'Error! Failed to get access token.'
 
 def pushed_register_keyword(userid):
   DATABASE_URL = os.environ.get('DATABASE_URL')
