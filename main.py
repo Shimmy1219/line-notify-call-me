@@ -153,12 +153,10 @@ def determine_to_send(user_message,userid):
         print("user_keyword_listは" + str(user_keyword_list))
         first_register = True
         for keyword_list in user_keyword_list:
-            if keyword_list[0] == None:
-                first_register = True
-            elif len(keyword_list) > 0:
-                print("キーワードは" + str(keyword_list))
-                first_register = False
-                break
+            for keyword in keyword_list:
+                if type(keyword) == list:
+                    first_register = False
+                    break
         print(first_register)
         if "exit" in user_message: #もしexitが入力されたら
             reply = "登録ありがとうございました。"
