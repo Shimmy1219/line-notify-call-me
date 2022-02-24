@@ -10,7 +10,7 @@ from linebot.exceptions import (
 )
 from linebot.models import (
     FollowEvent, MessageEvent, TextMessage, TextSendMessage, ImageMessage, ImageSendMessage, TemplateSendMessage, URIAction, PostbackAction,MessageAction,
-    ButtonsTemplate, PostbackTemplateAction, MessageTemplateAction, URITemplateAction
+    ButtonsTemplate, PostbackTemplateAction, MessageTemplateAction, URITemplateAction,QuickReply,QuickReplyButton
 )
 import os
 
@@ -158,15 +158,20 @@ def determine_to_send(user_message,userid):
                     first_register = False
                     break
         print(first_register)
-        if "exit" in user_message: #もしexitが入力されたら
+        if "/exit" in user_message: #もしexitが入力されたら
             reply = "登録ありがとうございました。"
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid)) #セッションから削除
             conn.commit()
+        elif "/continue" in user_message:
+            reply = "登録したいキーワードを選択してください。"
         else: #登録する
             cur.execute("SELECT logined_twitterid FROM session WHERE userid = '{}' AND session_id = '{}'".format(userid,session))
             screen_name = cur.fetchone()[0] #ログインしている垢を取得
             register_keyword(userid,screen_name,user_message) #キーワードを登録
-            reply = "登録しました。\n続けて登録したい場合はキーワードを送信してください\n終了する場合はexitを入力してください。"
+            quick_reply_list = ["exit","continue"]
+            items = [QuickReplyButton(action=MessageAction(label=f"{word}", text=f"/{word}")) for word in quick_reply_list]
+            reply = TextSendMessage(text= "登録しました。\n続けて登録したい場合はキーワードを送信してください\n終了する場合はexitを入力してください。",
+                               quick_reply=QuickReply(items=items))
         if first_register == True:
             line_bot_api.link_rich_menu_to_user(userid, rich_menu["add_reg_del"])
 

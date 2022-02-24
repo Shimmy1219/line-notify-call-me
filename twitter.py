@@ -122,6 +122,9 @@ def register_keyword(userid,screen_name,keyword):
     cur.execute("UPDATE database SET keyword = ARRAY{}  WHERE userid = '{}' AND screen_name = '{}'".format(str(keyword_list),userid,screen_name))
     conn.commit()
 
+
+
+
 def remove_keyword(userid,screen_name,keyword):
   DATABASE_URL = os.environ.get('DATABASE_URL')
 
@@ -133,6 +136,10 @@ def remove_keyword(userid,screen_name,keyword):
   print(result)
   if result == None:
     return "なにも登録されていません"
+  elif len(result) == 1:
+    cur.execute("UPDATE database SET keyword = ARRAY[]::TEXT[]  WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))
+    conn.commit()
+    return keyword + "を削除しました"
   else:
     cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,screen_name))
     keyword_list = cur.fetchone()[0]

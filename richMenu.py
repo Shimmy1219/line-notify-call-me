@@ -45,5 +45,5 @@ def createRichmenu():
 
 #print(createRichmenu())
 
-line_bot_api.unlink_rich_menu_from_user('U039da9cf7fe9ea0875e633f69b7f8e2e')
+#line_bot_api.unlink_rich_menu_from_user('U039da9cf7fe9ea0875e633f69b7f8e2e')
 #line_bot_api.link_rich_menu_to_user('U039da9cf7fe9ea0875e633f69b7f8e2e', 'richmenu-0451994b328bb4d2525bf11584accbef')
