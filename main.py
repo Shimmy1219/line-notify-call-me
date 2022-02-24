@@ -107,7 +107,7 @@ def determine_to_send(user_message,userid):
         cur.execute('SELECT session_id FROM session WHERE userid = %s',(userid,))
         session = cur.fetchone()[0]
         print("現在のセッションは"+ session+"です")
-    if "reset" in user_message: #resetが入力されたらセッション情報を削除する
+    if "/reset" in user_message: #resetが入力されたらセッション情報を削除する
         cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
         conn.commit()
         reply = "キャンセルしました。"
@@ -118,7 +118,10 @@ def determine_to_send(user_message,userid):
             record_session(is_exists_user,'authentication_in_process',userid)
             reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
         else:
-            reply = "操作が間違っています。resetと入力すると通常状態に戻ります。"
+            quick_reply_list = ["reset","continue"]
+            items = [QuickReplyButton(action=MessageAction(label=f"{word}", text=f"/{word}")) for word in quick_reply_list]
+            reply = TextSendMessage(text= "操作が異なります。\nresetボタンを押すと通常状態に戻ります",
+                               quick_reply=QuickReply(items=items))
     elif is_exists_user == True and session == 'authentication_in_process': #ログインする処理
         reply = authentication_final(user_message,userid)
         cur.execute('SELECT userid FROM database WHERE userid = %s',(userid,))
@@ -142,7 +145,10 @@ def determine_to_send(user_message,userid):
                 record_session(True,account_list[0][5],userid,'logined_twitterid') #ログインしている垢を登録
                 reply = "キーワードを送信してください"
         else:
-            reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
+            quick_reply_list = ["reset","continue"]
+            items = [QuickReplyButton(action=MessageAction(label=f"{word}", text=f"/{word}")) for word in quick_reply_list]
+            reply = TextSendMessage(text= "操作が異なります。\nresetボタンを押すと通常状態に戻ります",
+                               quick_reply=QuickReply(items=items))
     elif is_exists_user == True and session == 'select_account_process_to_register_word': #セッションが垢選択セッションなら
         record_session(is_exists_user,'register_keyword_process',userid) #セッション名を登録
         record_session(is_exists_user,user_message,userid,'logined_twitterid') #ログインしている垢を登録
@@ -197,7 +203,10 @@ def determine_to_send(user_message,userid):
                     button_list.append(button_obj)
                 reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",button_list)
         else:
-            reply = "操作が間違えています。resetと入力すると通常状態に戻ります。"
+            quick_reply_list = ["reset","continue"]
+            items = [QuickReplyButton(action=MessageAction(label=f"{word}", text=f"/{word}")) for word in quick_reply_list]
+            reply = TextSendMessage(text= "操作が異なります。\nresetボタンを押すと通常状態に戻ります",
+                               quick_reply=QuickReply(items=items))
     elif is_exists_user == True and session == 'select_account_process_to_remove_word': #もしセッション選択プロセスなら
         record_session(is_exists_user,user_message,userid,'logined_twitterid') #ユーザーが送信したIDを登録する
         cur.execute("SELECT keyword FROM database WHERE userid = '{}' AND screen_name = '{}'".format(userid,user_message))
@@ -213,7 +222,7 @@ def determine_to_send(user_message,userid):
                 button_list.append(button_obj)
             reply = make_button_template("削除するキーワードを選択してください","登録済みのキーワード",button_list)
     elif is_exists_user == True and session == 'remove_keyword_process': #もし
-        if "exit" in user_message:
+        if "/exit" in user_message:
             reply = "ありがとうございました。"
             cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
             conn.commit()
