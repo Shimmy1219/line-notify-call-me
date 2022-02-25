@@ -107,7 +107,7 @@ def determine_to_send(user_message,userid):
         cur.execute('SELECT session_id FROM session WHERE userid = %s',(userid,))
         session = cur.fetchone()[0]
         print("現在のセッションは"+ session+"です")
-    if "/reset" in user_message: #resetが入力されたらセッション情報を削除する
+    if "reset" in user_message: #resetが入力されたらセッション情報を削除する
         cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
         conn.commit()
         reply = "キャンセルしました。"
@@ -118,7 +118,7 @@ def determine_to_send(user_message,userid):
             record_session(is_exists_user,'authentication_in_process',userid)
             reply = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=authorize_url()),TextSendMessage(text="承認番号を送ってください")]
         elif is_exists_user == True and session == 'authentication_in_process':
-            reply = "上記のURLにアクセスして承認番号を送信してください。"
+            reply = "上記のURLにアクセスして承認番号を送信してください。操作をリセットする場合はresetを入力してください"
         else:
             quick_reply_list = ["reset","continue"]
             items = [QuickReplyButton(action=MessageAction(label=f"{word}", text=f"/{word}")) for word in quick_reply_list]

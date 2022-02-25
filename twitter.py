@@ -1,6 +1,7 @@
 import tweepy
 import os
 import psycopg2
+import requests
 
 CK = 'ctiRJV5FXu2uBm9rW3ltLe0z2'
 CS = 'Gf2okVdVay66UO8MkQ18sTKTfvNMadJRuG5did1i5mRfLibHdw'
@@ -12,6 +13,19 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 
 conn = psycopg2.connect(DATABASE_URL)
 cur = conn.cursor()
+
+def send_content(tweet):
+    """LINEのトークン情報"""
+    TOKEN = 'DT3t2D6V3W9KQXoglc5GDkegsfCNopc6FJbxeIr0Lmh'
+    api_url = 'https://notify-api.line.me/api/notify'
+    send_contents = '\n' + tweet
+
+    """辞書型にする"""
+    TOKEN_dic = {'Authorization': 'Bearer' + ' ' + TOKEN}
+    send_dic = {'message': send_contents}
+
+    """画像を準備する"""
+    requests.post(api_url, headers=TOKEN_dic, data=send_dic)
 
 def is_exists(table,column_name,data): #コラムにデータがあるか確認する。あればTrueを返す
     conn = psycopg2.connect(DATABASE_URL)
@@ -26,8 +40,9 @@ def authorize_url():  #Twitterの認証URLを返す
   try:
     redirect_url = auth.get_authorization_url()
     return redirect_url #return URL
-  except tweepy.TweepError:
-    return "Return authorization url is failed."
+  except tweepy.TweepError as e:
+    send_content(e)
+    return "Return authorization url is failed.\nもう一度やり直してください。"
 
 def authentication_final(user_verifier,userid): #Twitterの認証をしてユーザーをデータベースに登録
   global auth,api
@@ -55,7 +70,8 @@ def authentication_final(user_verifier,userid): #Twitterの認証をしてユー
       #api.update_status('test tweet!!!!!') # 認証が成功した時にツイートで確認したい方は使ってください
       try: #認証が有効か確認。twitterのユーザーデータを返す
         user = api.verify_credentials()
-      except:
+      except Exception as e:
+        send_content(e)
         return "The user credentials are invalid."
       if is_exists('database','twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
         try: #データベースにユーザーを登録
@@ -76,7 +92,8 @@ def authentication_final(user_verifier,userid): #Twitterの認証をしてユー
         conn.close()
         return '{}はログインされています'.format(user.screen_name)
 
-    except tweepy.TweepError:
+    except tweepy.TweepError as e:
+      send_content(e)
       return 'Error! Failed to get access token.'
 
 def pushed_register_keyword(userid):

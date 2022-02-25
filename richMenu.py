@@ -8,6 +8,7 @@ from linebot.models import (
 )
 import psycopg2
 from linebot.models.actions import PostbackAction
+import requests
 
 line_bot_api = LineBotApi('sEsX2yDRvj454rjlxv8JQ4coXHyUTaAwOextJx0YvtkGh2eZUPwz6opSHz3HKj7erXf+eMN5gXdFfwnTjsdMsChCBsMAeHbiNwfqEZZOBk5OSLlSLHeZVoFl5CXvyM0KKslYItAO/c9kwdpKvKQcegdB04t89/1O/w1cDnyilFU=')
 
@@ -46,12 +47,12 @@ def createRichmenu():
 
 #print(createRichmenu())
 
-line_bot_api.unlink_rich_menu_from_user('U039da9cf7fe9ea0875e633f69b7f8e2e')
+#line_bot_api.unlink_rich_menu_from_user('U039da9cf7fe9ea0875e633f69b7f8e2e')
 #line_bot_api.link_rich_menu_to_user('U039da9cf7fe9ea0875e633f69b7f8e2e', 'richmenu-0451994b328bb4d2525bf11584accbef')
 
-DATABASE_URL = 'postgres://vsszkbimyldkmr:cfa2e2f3909965bf340fd61f95648e6311616a0feb10cbb05c39713878b2be2d@ec2-3-228-222-169.compute-1.amazonaws.com:5432/d35fogc38bmvng'
+#DATABASE_URL = 'postgres://vsszkbimyldkmr:cfa2e2f3909965bf340fd61f95648e6311616a0feb10cbb05c39713878b2be2d@ec2-3-228-222-169.compute-1.#amazonaws.com:5432/d35fogc38bmvng'
 
-conn = psycopg2.connect(DATABASE_URL)
-cur = conn.cursor()
-cur.execute("DELETE FROM database WHERE userid = 'U039da9cf7fe9ea0875e633f69b7f8e2e'")
-conn.commit()
+#conn = psycopg2.connect(DATABASE_URL)
+#cur = conn.cursor()
+#cur.execute("DELETE FROM database WHERE userid = 'U039da9cf7fe9ea0875e633f69b7f8e2e'")
+#conn.commit()
