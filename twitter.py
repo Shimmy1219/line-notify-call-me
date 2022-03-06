@@ -2,7 +2,25 @@ import tweepy
 import os
 import psycopg2
 import requests
+from linebot import (
+    LineBotApi, WebhookHandler
+)
+from linebot.exceptions import (
+    InvalidSignatureError
+)
+from linebot.models import (
+    FollowEvent, MessageEvent, TextMessage, TextSendMessage, ImageMessage, ImageSendMessage, TemplateSendMessage, URIAction, PostbackAction,MessageAction,
+    ButtonsTemplate, PostbackTemplateAction, MessageTemplateAction, URITemplateAction,QuickReply,QuickReplyButton
+)
 
+LINE_CHANNEL_ACCESS_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
+
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+rich_menu = {
+    'add_how':'richmenu-085de853cf35efb0ff72667940c0b689',
+    'add_reg':'richmenu-c078890c117ca8e313d1d5f54735d9dc',
+    'add_reg_del':'richmenu-0451994b328bb4d2525bf11584accbef'
+    }
 CK = 'ctiRJV5FXu2uBm9rW3ltLe0z2'
 CS = 'Gf2okVdVay66UO8MkQ18sTKTfvNMadJRuG5did1i5mRfLibHdw'
 
@@ -45,16 +63,6 @@ def authorize_url():  #Twitterの認証URLを返す
     return "Return authorization url is failed.\nもう一度やり直してください。"
 
 def authentication_final(user_verifier,userid): #Twitterの認証をしてユーザーをデータベースに登録
-  global auth,api
-  session =   {
-      "request_token": auth.request_token,
-  }
-
-  auth = tweepy.OAuthHandler(CK, CS)
-  token = session["request_token"]
-  session.pop("request_token")
-  auth.request_token = token
-
   conn = psycopg2.connect(DATABASE_URL)
   cur = conn.cursor()
 
@@ -70,31 +78,34 @@ def authentication_final(user_verifier,userid): #Twitterの認証をしてユー
       #api.update_status('test tweet!!!!!') # 認証が成功した時にツイートで確認したい方は使ってください
       try: #認証が有効か確認。twitterのユーザーデータを返す
         user = api.verify_credentials()
-      except Exception as e:
-        send_content(e)
-        return "The user credentials are invalid."
-      if is_exists('database','twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
-        try: #データベースにユーザーを登録
-          cur.execute(
-          "INSERT INTO database (\
-            userid, access_token, acess_token_secret, twitterid, screen_name, name\
-            ) VALUES(%s, %s, %s, %s, %s, %s)",
-              (userid, token, secret, user.id_str, user.screen_name, user.name))
-          conn.commit()
-
+        if is_exists('database','twitterid',user.id_str) == False: #もしデータベースにユーザーが存在しなかったら
+          try: #データベースにユーザーを登録
+            cur.execute(
+            "INSERT INTO database (\
+              userid, access_token, acess_token_secret, twitterid, screen_name, name\
+              ) VALUES(%s, %s, %s, %s, %s, %s)",
+                (userid, token, secret, user.id_str, user.screen_name, user.name))
+            conn.commit()
+            reply = '認証成功\nこんにちは！{}さん\nメニューからキーワードを登録することができます。'.format(user.name)
+            cur.execute('SELECT userid FROM database WHERE userid = %s',(userid,))
+            if len(cur.fetchall()) == 1:
+              line_bot_api.link_rich_menu_to_user(userid, rich_menu["add_reg"])
+            cur.close()
+            conn.close()
+          except:
+            reply = 'Error! Failed to access the database.'
+        else: #もし既にユーザーがデータベースにあったら
           cur.close()
           conn.close()
-          return '認証成功\nこんにちは！{}さん\nメニューからキーワードを登録することができます。'.format(user.name)
-        except:
-          return 'Error! Failed to access the database.'
-      else: #もし既にユーザーがデータベースにあったら
-        cur.close()
-        conn.close()
-        return '{}はログインされています'.format(user.screen_name)
-
+          reply = '{}はログインされています'.format(user.screen_name)
+      except Exception as e:
+        send_content(e)
+        reply = "The user credentials are invalid."
     except tweepy.TweepError as e:
       send_content(e)
-      return 'Error! Failed to get access token.'
+      reply = 'Error! Failed to get access token.'
+
+  return reply
 
 def pushed_register_keyword(userid):
   DATABASE_URL = os.environ.get('DATABASE_URL')

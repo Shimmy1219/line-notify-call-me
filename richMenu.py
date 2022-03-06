@@ -56,3 +56,15 @@ def createRichmenu():
 #cur = conn.cursor()
 #cur.execute("DELETE FROM database WHERE userid = 'U039da9cf7fe9ea0875e633f69b7f8e2e'")
 #conn.commit()
+
+x=10
+
+try:
+    x=x+10
+    print(x)
+    try:
+        print(x+"やほ～")
+    except:
+        print("x+やほ～はできません")
+except:
+    print("ｘは足せません")

@@ -63,6 +63,7 @@ class getTweet():
             for keyword in record[7]:
               if keyword in status.text:
                 push_message(record[1],status.text,status.user.name,status.user.profile_image_url_https)
+                break #１回反応したらbreakする
           if x == 0:
             cur.execute("UPDATE database SET last_tweet_created_at = '{}'  WHERE id = '{}'".format(status.created_at,record[0]))
             conn.commit()

@@ -73,6 +73,14 @@ def handle_message(event):
         sending_message
     )
 
+def delete_from_session(userid):
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+
+    conn = psycopg2.connect(DATABASE_URL,options="-c search_path=public")
+    cur = conn.cursor()
+    cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
+    conn.commit()
+
 def make_button_template(text,title,buttons_list):
     message_template = TemplateSendMessage(
         alt_text='Buttons template',
@@ -108,8 +116,7 @@ def determine_to_send(user_message,userid):
         session = cur.fetchone()[0]
         print("現在のセッションは"+ session+"です")
     if "reset" in user_message: #resetが入力されたらセッション情報を削除する
-        cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
-        conn.commit()
+        delete_from_session(userid)
         reply = "キャンセルしました。"
     elif "How to use" in user_message:
         reply = "これは登録したキーワードがTwitterのタイムラインに出てくると通知するサービスです\nLogin for TwitterのボタンでTwitterにログインし、その後表示されるキーワード登録ボタンで通知してほしいキーワードを登録してください。"
@@ -126,11 +133,7 @@ def determine_to_send(user_message,userid):
                                quick_reply=QuickReply(items=items))
     elif is_exists_user == True and session == 'authentication_in_process': #ログインする処理
         reply = authentication_final(user_message,userid)
-        cur.execute('SELECT userid FROM database WHERE userid = %s',(userid,))
-        if len(cur.fetchall()) == 1:
-            line_bot_api.link_rich_menu_to_user(userid, rich_menu["add_reg"])
-        cur.execute("DELETE FROM session WHERE userid = '{}'".format(userid))
-        conn.commit()
+        delete_from_session(userid)
     elif "登録" in user_message or "とうろく" in user_message: #キーワード登録したい
         if is_exists_user == False: #もしセッションにいなかったら
             reply, account_list = pushed_register_keyword(userid) #ログインしている垢の数を取得
