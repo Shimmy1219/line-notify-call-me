@@ -48,8 +48,11 @@ class getTweet():
       AS = record[3]
       auth.set_access_token(AT, AS)
       api = tweepy.API(auth)
-
-      statuses = api.home_timeline(count=20)#最新のタイムラインを20個取得する
+      try:
+        statuses = api.home_timeline(count=20)#最新のタイムラインを20個取得する
+      except tweepy.error.RateLimitError:#もしタイムラインの取得に失敗したら
+        print(str(record[6])+"ユーザーでRateLimitErrorが発生しました！")
+        continue#次のユーザーに行く
       x = 0
       for status in statuses:#statusに取得したタイムライン20個を入れる
         last_time = record[8]#前回取得したツイートとしてlast_tweet_create_atに保存する
@@ -67,8 +70,10 @@ class getTweet():
           if record[4] != status.user.id_str:#もし取得したツイートが自分のものではなかったら
             for keyword in record[7]:#キーワードリストからキーワードを取得
               if keyword in status.text:#もしキーワードリストのキーワードがツイートに含まれていたら
-                push_message(record[1],status.text,status.user.name,status.user.profile_image_url_https)#メッセージを送信する
-                print("Lineにメッセージを送信しました！相手＝"+str(record[1])+"キーワード＝"+str(keyword))
+                try:
+                  push_message(record[1],status.text,status.user.name,status.user.profile_image_url_https)#メッセージを送信する
+                except:
+                  print("ERROR! "+str(record[1])+"に送信出来ませんでした。")
                 break #１回反応したらbreakする
           if x == 0:#もし取得した中で最新のツイートならば
             cur.execute("UPDATE database SET last_tweet_created_at = '{}'  WHERE id = '{}'".format(status.created_at,record[0]))
