@@ -20,13 +20,14 @@ DATABASE_URL = 'postgres://vsszkbimyldkmr:cfa2e2f3909965bf340fd61f95648e6311616a
 conn = psycopg2.connect(DATABASE_URL)
 cur = conn.cursor()
 
-def push_message(userid,text,name,url):
+def push_message(userid,text,name,url,type="tweet"):
     #LINE_CHANNEL_ACCESS_TOKEN = 'sEsX2yDRvj454rjlxv8JQ4coXHyUTaAwOextJx0YvtkGh2eZUPwz6opSHz3HKj7erXf#+eMN5gXdFfwnTjsdMsChCBsMAeHbiNwfqEZZOBk5OSLlSLHeZVoFl5CXvyM0KKslYItAO/c9kwdpKvKQcegdB04t89/1O/w1cDnyilFU='
     LINE_CHANNEL_ACCESS_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
     USER_ID = userid
 
     line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
-
+    if type == "tweet":
+      
     line_bot_api.push_message(
         USER_ID,
         TextSendMessage(
