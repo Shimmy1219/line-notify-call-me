@@ -26,7 +26,7 @@ def push_message(userid,text,name,url,type="tweet"):
     USER_ID = userid
 
     line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
-    if type == "tweet":
+    #if type == "tweet":
       
     line_bot_api.push_message(
         USER_ID,
