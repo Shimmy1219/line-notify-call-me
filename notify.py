@@ -27,7 +27,7 @@ def push_message(userid,text,name,url,type="tweet"):
 
     line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
     #if type == "tweet":
-      
+
     line_bot_api.push_message(
         USER_ID,
         TextSendMessage(
@@ -73,6 +73,7 @@ class getTweet():
               if keyword in status.text:#もしキーワードリストのキーワードがツイートに含まれていたら
                 try:
                   push_message(record[1],status.text,status.user.name,status.user.profile_image_url_https)#メッセージを送信する
+                  print("メッセージを送信しました。相手＝"+str(record[1])+"キーワード＝"+str(keyword))
                 except:
                   print("ERROR! "+str(record[1])+"に送信出来ませんでした。")
                 break #１回反応したらbreakする

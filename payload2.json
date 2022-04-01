@@ -5,12 +5,12 @@
   "body": {
     "type": "box",
     "layout": "vertical",
-    "paddingTop": "10px",
-    "paddingBottom": "10px",
+    "paddingTop": "5px",
+    "paddingBottom": "5px",
     "contents": [
       {
         "type": "text",
-        "text": "こんにちはささんさん。私の名前はひふなです。よろしくお願いいたします。",
+        "text": "これはテストツイートです。このツイート自体に意味はありません。ただのテストですから気にしないでください。",
         "weight": "regular",
         "size": "md",
         "align": "start",
@@ -30,45 +30,41 @@
     "layout": "horizontal",
     "flex": 0,
     "paddingAll": "0px",
-    "height": "30px",
+    "height": "20px",
     "backgroundColor": "#FFFFFF00",
     "contents": [
       {
-        "type": "button",
+        "type": "image",
+        "url": "https://monumental-halva-b15af0.netlify.app/reply.png",
+        "gravity": "center",
+        "size": "20px",
         "action": {
           "type": "message",
           "label": "reply",
           "text": "/reply"
         },
-        "color": "#ACD2FFFF",
-        "height": "sm",
-        "style": "secondary",
-        "gravity": "center"
       },
       {
-        "type": "button",
+        "type": "image",
+        "url": "https://monumental-halva-b15af0.netlify.app/retweet.png",
+        "gravity": "center",
+        "size": "20px",
         "action": {
           "type": "message",
           "label": "retweet",
           "text": "/retweet"
         },
-        "color": "#BEFEC8FF",
-        "height": "sm",
-        "style": "secondary",
-        "gravity": "center"
       },
       {
-        "type": "button",
+        "type": "image",
+        "url": "https://monumental-halva-b15af0.netlify.app/like.png",
+        "gravity": "center",
+        "size": "20px",
         "action": {
           "type": "message",
           "label": "like",
           "text": "/like"
         },
-        "color": "#FFC4F3FF",
-        "height": "sm",
-        "style": "secondary",
-        "gravity": "center",
-        "position": "relative"
       }
     ]
   }
